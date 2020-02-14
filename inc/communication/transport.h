@@ -32,7 +32,6 @@
 #define MAX 80 
 #define PORT 8080 
 
-#define CLIENTNUM 2
 
 /* Structure for ucp sockets storage. */
 typedef struct
