@@ -30,10 +30,11 @@
 #include <mqueue.h>
 #include <pthread.h>
 
+#include "config.h"
+
 // #define SEND_QUEUE  "/send_queue"
 // #define RECV_QUEUE  "/recv_queue"
-#define QUEUE_NAME_DIM  10
-#define MSG_SIZE        4
+#define QUEUE_NAME_DIM  11
 
 #define INIT_F        0
 #define DEINIT_F      1
@@ -53,19 +54,19 @@ ch_msg_t;
 typedef struct
 {
 	mqd_t send_q;
-    mqd_t recv_q;
+    mqd_t recv_q[DEVICE_NUM];
     int msg_max_num;         
     int msg_len;
     char s_q_name[QUEUE_NAME_DIM];     
-    char r_q_name[QUEUE_NAME_DIM];
+    char r_q_name[DEVICE_NUM][QUEUE_NAME_DIM];
 }
 ch_que_t;
 
 /* Structure for low level transport information. */
 typedef struct
 {
-    uint32_t * phy_ids;        //pointer to the array of entity that can communicate
-    int phy_cli_num;           //number of clients 
+    uint32_t phy_ids[DEVICE_NUM];        //pointer to the array of entity that can communicate
+    // int phy_cli_num;           //number of clients 
     void * cose;               //pointer to any kind of user data
     pthread_t recv_thid;       //
     pthread_t send_thid;       //
@@ -75,7 +76,7 @@ ch_phy_cfg;
 /* Structure for low level transport function pointer. */
 typedef struct
 {
-	int (*phy_init)(void *, uint32_t *, int *);
+	int (*phy_init)(void *, uint32_t *);
 	int (*phy_deinit)(void *);
 	int (*phy_data_send)(void *, uint32_t, uint8_t *, int);
 	int (*phy_data_recv)(void *, uint32_t *, uint8_t *, int );
