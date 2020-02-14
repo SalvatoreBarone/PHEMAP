@@ -13,6 +13,9 @@
 #include <errno.h>
 
 #include "transport.h"
+#include "config.h"
+
+uint8_t exbuff[4+MSG_SIZE];
 
 /*
     è necessario che la init ritorni gli identificativi dei client con cui può comunicare
@@ -94,38 +97,28 @@ int udp_server_init(
 
     printf("TRSPRT_PRINT: socket binded \n");                 //DELME
 
-    //ciclo NUMCLIENT volte e invio il mio "connect" message 
-    // const char conn[] = "connect";
-    // for (int i = 0; i < CLIENTNUM; i++)
-    // {
-    //     servaddr.sin_addr.s_addr = inet_addr(cfg_udp->addr[i]); 
-    //     // sendto(sockfd, (const char *)"connect", strlen("connect"), 
-    //     sendto(cfg_udp->sockfd, conn, strlen(conn), 0, (const struct sockaddr *) &servaddr, sizeof(servaddr)); 
-    // }
+    /* get own ip address */
+    char hostbuffer[256]; 
+    char *IPbuffer; 
+    struct hostent *host_entry; 
+    int hostname;
+
+    hostname = gethostname(hostbuffer, sizeof(hostbuffer)); 
+    if (hostname == -1) return -1;
+
+    host_entry = gethostbyname(hostbuffer); 
+    if (host_entry == NULL) return -1;
+
+    exbuff[0] = (((struct in_addr*)host_entry->h_addr_list[0])->s_addr) >> 24;
+    exbuff[1] = (((struct in_addr*)host_entry->h_addr_list[0])->s_addr) >> 16;
+    exbuff[2] = (((struct in_addr*)host_entry->h_addr_list[0])->s_addr) >> 8;
+    exbuff[3] = (((struct in_addr*)host_entry->h_addr_list[0])->s_addr);
     
-    // //ciclo NUMCLIENT volte e ricevo i "connect" message
-    // char recv_conn[sizeof(conn)+1];
-    // int len;
-    // for (int i = 0; i < CLIENTNUM; i++)
-    // {
-    //     int num_bytes = recvfrom(cfg_udp->sockfd, recv_conn, sizeof(conn), MSG_WAITALL, ( struct sockaddr *) &servaddr, &len); 
-    //     printf("Client %s connected\n",inet_ntoa(servaddr.sin_addr)); 
-
-    // }
-    //     //eventualmente controllo se li ho ricevuti da tutti i client
-    //         // servaddr.sin_addr.s_addr = inet_addr(addr[i]); 
-
-
-    // printf("TRSPRT_PRINT: client connection ended \n");                 //DELME
-    
-
     /* put all the things necessary to communicate in out parameter */
-    *ent_num = CLIENTNUM;
-    printf("TRSPRT_PRINT: clientnum copied \n");                 //DELME
-
-    for (int i = 0; i < CLIENTNUM; i++)
+    for (int i = 0; i < DEVICE_NUM; i++)
     {
         ent_ids[i] = i;
+
         printf("TRSPRT_PRINT: client id %d copied \n",i);                 //DELME
     }
 
@@ -172,24 +165,28 @@ int udp_data_recv(
     bzero(buff, msgsize); 
 
     struct sockaddr_in cliaddr;
+    bzero(&cliaddr, sizeof(cliaddr)); 
+
     int num_bytes, len = 0;
 
     // printf("TRSPRT_PRINT: sockfd: %d\n",(int)cfg_udp->sockfd[1]);                 //DELME
     // fflush(stdout);
-
-    num_bytes = recvfrom(cfg_udp->sockfd[1], buff, msgsize, MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); 
-    if(num_bytes<0);// printf("TRSPRT_PRINT: %s\n",strerror(errno));                 //DELME
-    if (num_bytes == msgsize)
+    uint8_t exbuff[4+MSG_SIZE];
+    num_bytes = recvfrom(cfg_udp->sockfd[1], exbuff, msgsize + 4, MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); 
+    if(num_bytes<0) return num_bytes;// printf("TRSPRT_PRINT: %s\n",strerror(errno));                 //DELME
+    if (num_bytes == msgsize+4)
     {
+        uint32_t src_addr = exbuff[0] << 24 | exbuff[1] << 16 | exbuff[2] << 8 | exbuff[3];
         char ind[15];
-        strcpy(ind,	inet_ntoa(cliaddr.sin_addr));
+        strcpy(ind,	inet_ntoa(*(struct in_addr*)&src_addr));
         printf("TRSPRT_PRINT: Receiving from: %s\n",ind);                 //DELME
-        for (int i = 0; i < CLIENTNUM; i++)
+        for (int i = 0; i < DEVICE_NUM; i++)
         {
             if(strcmp(ind,cfg_udp->addr[i])==0)
             {
                 *cli_id = i;
-                break;
+                memcpy(buff, &exbuff[4],MSG_SIZE);
+                return num_bytes - 4;
             }
         }
     }
@@ -201,7 +198,7 @@ int udp_data_recv(
     // // printf(" from socket\n");
     // fflush(stdout);
     
-    return num_bytes;
+    return -1;
 }
 
 int udp_data_send(
@@ -223,13 +220,17 @@ int udp_data_send(
     // printf("TRSPRT_PRINT: Sending to: %s\n",cfg_udp->addr[cli_id]);                 //DELME
 
     int err = 0;
-    // get the message from server and send to the client 
-    // printf("\npacket_send write: ");
-    // for(int i=0; i<MSGSIZE; i++){
-    //     printf("%x", data[i]);
-    // }
+    
+    memcpy(	&exbuff[4], buff, MSG_SIZE);
+    
+    for (int i = 0; i < 4+MSG_SIZE; i++)
+    {
+        printf("exbuff[%d]: %x\n", i, exbuff[i]); 
+    }
+    
+
     // err = write(udp_sock->clisock[cli_id], buff, msgsize); 
-    err = sendto(cfg_udp->sockfd[0], (const char *)buff, msgsize, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr)); 
+    err = sendto(cfg_udp->sockfd[0], (const char *)exbuff, msgsize + 4, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr)); 
     if(err<0) ;//printf("TRSPRT_PRINT: %s\n",strerror(errno));                 //DELME
 
     // printf("TRSPRT_PRINT: Exit phy data send\n");                 //DELME
