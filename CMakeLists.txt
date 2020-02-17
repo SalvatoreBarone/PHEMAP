@@ -15,7 +15,15 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/inc ${CMAKE_SOURCE_DIR}/inc/common ${CMAKE_SOURCE_DIR}/inc/common/linux ${CMAKE_SOURCE_DIR}/inc/communication ${CMAKE_SOURCE_DIR}/inc/device)
+
+include_directories(
+    ${CMAKE_SOURCE_DIR}/inc 
+    ${CMAKE_SOURCE_DIR}/inc/common 
+    ${CMAKE_SOURCE_DIR}/inc/common/linux 
+    ${CMAKE_SOURCE_DIR}/inc/communication 
+    ${CMAKE_SOURCE_DIR}/inc/authservice
+    ${CMAKE_SOURCE_DIR}/inc/device
+)
 
 # add the executable
 add_executable(peerMain ${CMAKE_SOURCE_DIR}/src/peer.c)
@@ -30,7 +38,8 @@ add_custom_target(runPeer
 ###necessito di fare prima gli altri
 find_library(LIBRT rt) 
 if(LIBRT)
-target_link_libraries(peerMain PRIVATE Threads::Threads channel transport ${LIBRT})
+# target_link_libraries(peerMain PRIVATE Threads::Threads channel transport phemapas_enroll ${LIBRT})
+target_link_libraries(peerMain PRIVATE Threads::Threads channel transport phemapas ${LIBRT})
 #target_link_libraries(target_name ${LIBRT})
 endif()
 
