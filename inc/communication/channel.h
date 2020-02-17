@@ -45,7 +45,7 @@
 typedef struct
 {
     uint32_t cli_id;                    //id of destination
-    int size;                           //length of the buffer
+    uint32_t size;                           //length of the buffer
 	uint8_t buff[MSG_SIZE];             //pointer of the buffer
 }
 ch_msg_t;
@@ -78,8 +78,8 @@ typedef struct
 {
 	int (*phy_init)(void *, uint32_t *);
 	int (*phy_deinit)(void *);
-	int (*phy_data_send)(void *, uint32_t, uint8_t *, int);
-	int (*phy_data_recv)(void *, uint32_t *, uint8_t *, int );
+	int (*phy_data_send)(void *, uint32_t, uint8_t *, uint32_t);
+	int (*phy_data_recv)(void *, uint32_t *, uint8_t *, uint32_t);
 }
 ch_phy_fun;
 
