@@ -45,8 +45,8 @@ udp_info_t;
 int udp_server_init(void * args,uint32_t *, int *);
 int udp_server_deinit(void * args);
 
-int udp_data_recv(void * args, uint32_t *cli_id, uint8_t *buff, uint8_t msgsize);
-int udp_data_send(void * args, uint32_t cli_id, uint8_t *buff, uint8_t msgsize);
+int udp_data_recv(void * args, uint32_t *cli_id, uint8_t *buff, uint32_t msg_size);
+int udp_data_send(void * args, uint32_t cli_id, uint8_t *buff, uint32_t msg_size);
 
 
 #endif
