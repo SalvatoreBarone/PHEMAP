@@ -155,14 +155,14 @@ int udp_data_recv(
         void * args,
         uint32_t *cli_id,
         uint8_t *buff,
-        uint8_t msgsize
+        uint32_t msg_size
         )
 { 
     udp_info_t *cfg_udp = (udp_info_t *)args;  
 
     // printf("TRSPRT_PRINT: Enter phy data receive\n");                 //DELME
 
-    bzero(buff, msgsize); 
+    bzero(buff, msg_size);   //check if needed
 
     struct sockaddr_in cliaddr;
     bzero(&cliaddr, sizeof(cliaddr)); 
@@ -172,14 +172,14 @@ int udp_data_recv(
     // printf("TRSPRT_PRINT: sockfd: %d\n",(int)cfg_udp->sockfd[1]);                 //DELME
     // fflush(stdout);
     uint8_t exbuff[4+MSG_SIZE];
-    num_bytes = recvfrom(cfg_udp->sockfd[1], exbuff, msgsize + 4, MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); 
+    num_bytes = recvfrom(cfg_udp->sockfd[1], exbuff, msg_size + 4, MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); 
     if(num_bytes<0) return num_bytes;// printf("TRSPRT_PRINT: %s\n",strerror(errno));                 //DELME
-    if (num_bytes == msgsize+4)
-    {
+    // if (num_bytes == msg_size+4)
+    // {
         uint32_t src_addr = exbuff[0] << 24 | exbuff[1] << 16 | exbuff[2] << 8 | exbuff[3];
         char ind[15];
         strcpy(ind,	inet_ntoa(*(struct in_addr*)&src_addr));
-        printf("TRSPRT_PRINT: Receiving from: %s\n",ind);                 //DELME
+        printf("TRSPRT_PRINT: Receiving from: %s %d bytes\n",ind, num_bytes);                 //DELME
         for (int i = 0; i < DEVICE_NUM; i++)
         {
             if(strcmp(ind,cfg_udp->addr[i])==0)
@@ -189,10 +189,10 @@ int udp_data_recv(
                 return num_bytes - 4;
             }
         }
-    }
+    // }
     
     
-    // for(int i=0; i<msgsize; i++){
+    // for(int i=0; i<msg_size; i++){
     // printf("%x" ,buff[i]);
     // }
     // // printf(" from socket\n");
@@ -205,7 +205,7 @@ int udp_data_send(
         void * args,
         uint32_t cli_id,
         uint8_t *buff,
-        uint8_t msgsize
+        uint32_t msg_size
         )
 {
     udp_info_t *cfg_udp = (udp_info_t *)args;  
@@ -221,16 +221,15 @@ int udp_data_send(
 
     int err = 0;
     
-    memcpy(	&exbuff[4], buff, MSG_SIZE);
+    memcpy(	&exbuff[4], buff, MSG_SIZE);//forse è meglio msg_size
     
-    for (int i = 0; i < 4+MSG_SIZE; i++)
-    {
-        printf("exbuff[%d]: %x\n", i, exbuff[i]); 
-    }
+    // for (int i = 0; i < 4+MSG_SIZE; i++)
+    // {
+    //     printf("exbuff[%d]: %x\n", i, exbuff[i]); 
+    // }
     
-
-    // err = write(udp_sock->clisock[cli_id], buff, msgsize); 
-    err = sendto(cfg_udp->sockfd[0], (const char *)exbuff, msgsize + 4, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr)); 
+    // err = write(udp_sock->clisock[cli_id], buff, msg_size); 
+    err = sendto(cfg_udp->sockfd[0], (const char *)exbuff, msg_size + 4, 0, (const struct sockaddr *) &cliaddr, sizeof(cliaddr)); 
     if(err<0) ;//printf("TRSPRT_PRINT: %s\n",strerror(errno));                 //DELME
 
     // printf("TRSPRT_PRINT: Exit phy data send\n");                 //DELME
