@@ -202,6 +202,7 @@ void* ch_msg_recv(      //task periodico di ricezione
         /* get data from physical communication channel */
         msg.size = chnl->function.phy_data_recv(chnl->cfg.cose, &msg.cli_id, msg.buff, sizeof(msg.buff));  
         if(msg.size == sizeof(msg.buff))
+        // if(msg.size > 0)
         {
             printf("CH_PRINT: ricevuto qualcosa da %d \n", msg.cli_id);                 //DELME
             /* sending received data to applicative receiving queue*/ 
@@ -249,7 +250,7 @@ void* ch_msg_send(           //task periodico di invio
         if(bytes_read == sizeof(ch_msg_t))
         {
             // printf("CH_PRINT: write on channel \n");                 //DELME
-
+    
             /* put data on physical communication channel */
             int res = chnl->function.phy_data_send(chnl->cfg.cose, msg.cli_id, msg.buff, msg.size);
         }
@@ -395,12 +396,12 @@ int32_t ch_phy_que_set(
     static int ch_num = 0;
     int k = 0;
     k = sprintf(que->s_q_name, "/q_send%d", ch_num);
-    printf("\nsend name has %d char" , k);
+    // printf("\nsend name has %d char" , k);
     for (int i = 0; i < DEVICE_NUM; i++)
     {
         k = sprintf(&que->r_q_name[i][0], "/q_recv%d_%d", ch_num, i); 
-        printf("\n%s", &que->r_q_name[i][0]);
-        printf("\nrecv name %d has %d char" ,i , k);
+        // printf("\n%s", &que->r_q_name[i][0]);
+        // printf("\nrecv name %d has %d char" ,i , k);
 
     }
     ch_num++;
