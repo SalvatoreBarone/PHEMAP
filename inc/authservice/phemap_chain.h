@@ -29,9 +29,9 @@
 
 typedef struct
 {
-	int32_t length; /**< Actual length of the chain */
+	int32_t length; 								/**< Actual length of the chain */
 
-	int32_t current;	/**< Index of the currently in use link on the chain */
+	int32_t current;								/**< Index of the currently in use link on the chain */
 
 	PHEMAP_Link_t links[ABSOLUTE_MAX_CHAIN_LENGTH]; /**< Chain */
 }
@@ -52,5 +52,33 @@ int32_t PHEMAP_Chain_store(
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
 		const PHEMAP_Chain_t * const chain);
+
+int32_t PHEMAP_Chain_update(
+		const char * const databasename,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		PHEMAP_Chain_t * const chain);
+
+int32_t PHEMAP_Chain_createDatabase_bin(
+		const char * const databasename);
+
+int32_t PHEMAP_Chain_load_bin(
+		const char * const databasename,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		PHEMAP_Chain_t * const chain);
+
+
+int32_t PHEMAP_Chain_store_bin(
+		const char * const databasename,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		const PHEMAP_Chain_t * const chain);
+
+int32_t PHEMAP_Chain_update_bin(
+		const char * const databasename,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		PHEMAP_Chain_t * const chain);
 
 #endif
