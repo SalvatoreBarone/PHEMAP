@@ -24,9 +24,9 @@
 #define FUZZYEXTRACTOR_H
 
 #include <inttypes.h>
+#include "d_config.h"
 #include "sha256.h"
 #include "rc5.h"
-#include "d_config.h"
 
 /**
  * @defgroup fuzzy Fuzzy-Extractor

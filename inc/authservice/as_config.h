@@ -22,7 +22,6 @@
 #ifndef PHEMAP_AS_CONFIG_H
 #define PHEMAP_AS_CONFIG_H
 
-
 /**
  * @brief Absolute number of enrolled chains, for each managed device
  */

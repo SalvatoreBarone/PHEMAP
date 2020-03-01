@@ -2,8 +2,10 @@
  * @file phemap_as_enrollment.h
  *
  * @author Salvatore Barone <salvator.barone@gmail.com>
+ * @author Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * Copyright 2019 Salvatore Barone <salvator.barone@gmail.com>
+ * Copyright 2019 Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * This file is part of libPHEMAP.
  *
@@ -20,32 +22,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef PHEMAP_ENROLLMENT_H
-#define PHEMAP_ENROLLMENT_H
+#ifndef PHEMAP_AS_ENROLLMENT_H
+#define PHEMAP_AS_ENROLLMENT_H
 
 #include <inttypes.h>
 
 #include "phemap_chain.h"
 #include "channel.h"
 
-// int32_t PHEMAP_GenerateChain(  //need to change the signature 
-// 	const char * const remote_server_ip,
-// 	uint16_t remote_server_port,
-// 	const int32_t maxChainLength,
-// 	PHEMAP_Chain_t * const chain);
-
 int32_t PHEMAP_GenerateChain(  
 	channel_t * chnl,
 	PHEMAP_Device_ID_t device_id,
 	const int32_t maxChainLength,
 	PHEMAP_Chain_t * const chain);
-
-int32_t PHEMAP_BuildChain(  
-	channel_t * chnl,
-	PHEMAP_Device_ID_t device_id,
-	const int32_t maxChainLength);
-
-
 
 
 #endif

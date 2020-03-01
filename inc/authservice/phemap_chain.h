@@ -2,8 +2,10 @@
  * @file phemap_chain.h
  *
  * @author Salvatore Barone <salvator.barone@gmail.com>
+ * @author Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * Copyright 2019 Salvatore Barone <salvator.barone@gmail.com>
+ * Copyright 2019 Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * This file is part of libPHEMAP.
  *
@@ -54,28 +56,6 @@ int32_t PHEMAP_Chain_store(
 		const PHEMAP_Chain_t * const chain);
 
 int32_t PHEMAP_Chain_update(
-		const char * const databasename,
-		PHEMAP_Device_ID_t device_id,
-		uint32_t chain_id,
-		PHEMAP_Chain_t * const chain);
-
-int32_t PHEMAP_Chain_createDatabase_bin(
-		const char * const databasename);
-
-int32_t PHEMAP_Chain_load_bin(
-		const char * const databasename,
-		PHEMAP_Device_ID_t device_id,
-		uint32_t chain_id,
-		PHEMAP_Chain_t * const chain);
-
-
-int32_t PHEMAP_Chain_store_bin(
-		const char * const databasename,
-		PHEMAP_Device_ID_t device_id,
-		uint32_t chain_id,
-		const PHEMAP_Chain_t * const chain);
-
-int32_t PHEMAP_Chain_update_bin(
 		const char * const databasename,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
