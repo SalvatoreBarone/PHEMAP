@@ -22,6 +22,8 @@
 #ifndef PHEMAP_AS_CONFIG_H
 #define PHEMAP_AS_CONFIG_H
 
+#include "config.h"
+
 /**
  * @brief Absolute number of enrolled chains, for each managed device
  */
@@ -31,5 +33,8 @@
  * @brief Absolute maximum chain length
  */
 #define ABSOLUTE_MAX_CHAIN_LENGTH 1000
+
+#define AS_SENTINEL SENTINEL
+#define AS_SENTINEL_ROOT AS_SENTINEL+3
 
 #endif
