@@ -68,7 +68,7 @@ static int32_t PHEMAP_Device_checkInitReq(
 	// Calcolo i link successivi ed effettuo la XOR
 	for (uint32_t j = 1; j < SENTINEL; j++)
 	{
-		PHEMAP_Device_getNextLink(device, &l_i, 1);
+		PHEMAP_Device_peekLink(device, 1, RET_SENTINEL,&l_i);
 		memxor(&gen_link, l_i, sizeof(PHEMAP_Link_t));
 	}
 
@@ -119,8 +119,8 @@ static void PHEMAP_Device_buildInitReply(
 
 	printf("ottengo d1 e d2 in xor con la nonce\n");			//DELME
 
-	PHEMAP_Device_getNextLink(device, &d_1, SENTINEL);
-	PHEMAP_Device_getNextLink(device, d_2, SENTINEL + 1);
+	PHEMAP_Device_peekLink(device, SENTINEL, RET_SENTINEL, &d_1);
+	PHEMAP_Device_peekLink(device, SENTINEL + 1, RET_SENTINEL, d_2);
 	memxor(&d_1, &nonce, sizeof(PHEMAP_Link_t));                              //le & di riferimento
 	memxor(d_2, &nonce, sizeof(PHEMAP_Link_t));                              //le & di riferimento
 
@@ -174,8 +174,8 @@ static int32_t PHEMAP_Device_checkInitAck(
 	memcpy(&s_1, &message->payload.init_ack.l_2 , sizeof(PHEMAP_Link_t));
 	memcpy(&s_2, &message->payload.init_ack.l_2 , sizeof(PHEMAP_Link_t));
 	
-	PHEMAP_Device_getNextLink(device, &s_1, SENTINEL + 1);
-	PHEMAP_Device_getNextLink(device, &s_2, SENTINEL + 2);
+	PHEMAP_Device_peekLink(device, SENTINEL + 1, RET_SENTINEL, &s_1);
+	PHEMAP_Device_peekLink(device, SENTINEL + 2, RET_SENTINEL, &s_2);
 	memxor(&s_1, &s_2, sizeof(PHEMAP_Link_t));
 
 	if (0 != memcmp(&s_1, d_2, sizeof(PHEMAP_Link_t)))
@@ -261,7 +261,7 @@ int32_t PHEMAP_Device_PHEMAPInit(PHEMAP_Device_t * const device)
 	printf("attendo la ricezione dell'ack\n");			//DELME
 
 	// Si aspetta la ricezione dell'ack per completare l'autenticazione
-	while (ch_msg_pop(&device->chnl, &msg)!=0) sleep(1);				
+	while (ch_msg_pop(&device->chnl, &msg)!=0);				
 
 	printf("controllo l'ack\n");			//DELME
 
@@ -273,8 +273,8 @@ int32_t PHEMAP_Device_PHEMAPInit(PHEMAP_Device_t * const device)
 	printf("aggiorno Q\n");			//DELME
 	// Se la verifica del messaggio di init ack va a buon fine, il device
 	// aggiorna il registro Q
-	// memcpy(&device->Q, &d_2, sizeof(PHEMAP_Link_t));
-
+	memcpy(&device->Q, &d_2, sizeof(PHEMAP_Link_t));
+	device->counter = 0;
 
 	// Il link dovrebbe essere SENTINEL+2, ma questo link è la root-sentinel,
 	// che non deve mai essere scambiata, motivo per cui si avanza direttamente
