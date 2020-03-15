@@ -54,24 +54,68 @@
  * i-th link - @f$ l_{k+i} @f$ - is a sentinel link, the function will return 
  * i+1.
  */
-uint32_t PHEMAP_Device_getNextLink(
+uint32_t PHEMAP_Device_peekLink(
 		PHEMAP_Device_t * const device,			//necessario per la PUF
-		PHEMAP_Link_t * const link,
-		uint32_t i)
+		uint32_t i,
+		uint8_t senti_flag,
+		PHEMAP_Link_t * const link)				//challenge e response
 {
+	uint32_t counter = device->counter;
 	for (uint32_t k = 0; k < i; k++)
 	{
+		if (senti_flag != RET_SENTINEL) //non voglio le sentinelle 
+		{
+			if ((counter % SENTINEL) == 0)
+			{
+				k--;
+				counter++;
+			}
+		}
+		
 		// RC5_64RB_Encrypt(
 		// 		RC5_ENCRYPTION_ROUNDS, 
 		// 		device->subkeys, 
 		// 		link, 
 		// 		link);
 		PHEMAP_DEV_linkGen(device, 0, link, link);
-		printf("genero il link k-th\n");			//DELME
+		printf("genero il link %d-th\n",k);			//DELME
 
 	}
 
-	return i;
+	return 0;
+}
+
+uint32_t PHEMAP_Device_getNextLink(
+		PHEMAP_Device_t * const device,			//necessario per la PUF
+		uint8_t senti_flag,
+		PHEMAP_Link_t * const link)				//contiene il successivo link nella chain
+{
+	if (senti_flag != RET_SENTINEL) //non voglio le sentinelle 
+		{
+			if ((device->counter % SENTINEL) == 0)
+			{
+				// RC5_64RB_Encrypt(
+				// 		RC5_ENCRYPTION_ROUNDS, 
+				// 		device->subkeys, 
+				// 		link, 
+				// 		link);
+				PHEMAP_DEV_linkGen(device, 0, &device->Q, &device->Q);
+				device->counter++;
+			}
+		}
+
+	// RC5_64RB_Encrypt(
+	// 		RC5_ENCRYPTION_ROUNDS, 
+	// 		device->subkeys, 
+	// 		link, 
+	// 		link);	
+	PHEMAP_DEV_linkGen(device, 0, &device->Q, &device->Q);
+	device->counter++;
+
+	memcpy(link, &device->Q,sizeof(PHEMAP_Link_t));
+	printf("genero il link\n");	
+
+	return 0;
 }
 
 /**

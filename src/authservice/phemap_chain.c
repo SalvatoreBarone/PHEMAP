@@ -87,10 +87,131 @@ int32_t PHEMAP_Chain_createDatabase(
  * @return Number of chain read, on succes, or -1, if an error occurs (for example, when the
  * database does not exist).
  */
-int32_t PHEMAP_Chain_load(
+// int32_t PHEMAP_Chain_load(
+// 		const char * const db_name,
+// 		PHEMAP_Device_ID_t device_id,
+// 		uint32_t chain_id,
+// 		PHEMAP_Chain_t * const chain)
+// bisogna trasformarla in 2 funzioni getNextLink e peekLink
+// la prima ritorna il successivo link non sentinella nella chain //usare solo dopo la init
+// la seconda ritorna i successivi k link in una chain
+// la seconda prende in ingresso un flag per dire se si vogliono o meno le sentinelle
+int32_t PHEMAP_Chain_getNextLink(
 		const char * const db_name,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
+		PHEMAP_Link_t * const link)
+{
+	// int fseek(FILE *fp, long distanza, int partenza)
+	// distanza indica di quanti byte il file pointer deve essere spostato 
+	// partenza indica da quale posizione deve essere spostato.
+
+	int res = 0;
+	char buff[50];
+
+	res = sprintf(buff, "%016lx", device_id);		//aggiungi la logica per chain_id
+	char dbase[strlen(db_name)+16+1];
+
+	strcpy(dbase, db_name);
+	strcat(dbase, buff);
+
+	//controllo che il file esista
+	FILE * fp;
+	fp = fopen (dbase,"r");
+	if(fp==NULL)
+	{
+		return -1;
+	}
+
+	int32_t length = 0;
+	//leggo la lunghezza della chain 
+	res = fscanf(fp, "%x", &length);	
+	printf("lenght: %x\n", length);	
+	if(res == EOF) {
+		fclose (fp);
+		return -1;	
+	}
+
+	int32_t current = 0;
+	//leggo il link a cui sono arrivato 
+	res = fscanf(fp, "%x", &current);
+	printf("current: %x\n", current);	
+	if(res == EOF) {
+		fclose (fp);
+		return -1;	
+	}
+
+	//controllo che current non sia una sentinella 
+	if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+	{
+		current++;
+		printf("current: %x\n", current);	
+	}
+
+	//controllo che la chain non sia terminata
+	if (current >= length)
+	{
+		return -1; //forse ritorna un errore per dire chain exaution
+	}
+	
+	int size = 2*current*sizeof(PHEMAP_Link_t) + current;
+	res = fseek(fp,size, SEEK_CUR);
+	if(res != 0){
+		fclose (fp);
+		return res;	//oppure -1
+	}
+
+	//leggo il link della chain
+	char buff_b[3];
+	buff_b[2] = '\n';
+	uint8_t * read_ptr;
+	int32_t byte_read;
+
+	printf("Enter link reading\n");			//DEL ME 
+	read_ptr = (uint8_t*) link;
+	
+	res = fscanf(fp, "%s", buff);
+	if(res == EOF) {
+		fclose (fp);
+		return -1;	
+	}
+
+	for (int j = 0; j < sizeof(PHEMAP_Link_t); j++)
+	{
+		memcpy(buff_b,&buff[2*j],2);						//necessaria per il \n
+		sscanf(buff_b,"%x", &byte_read);
+		read_ptr[j] = (uint8_t)(byte_read & 0x000000FF);
+	}
+
+	fclose (fp);
+
+	current++;
+
+	//riapro il file in lettura/scrittura
+	fp = fopen (dbase,"r+");
+	if(fp==NULL)
+	{
+		return -1;
+	}
+
+	//aggiorno i campi della chain
+	res = sprintf(buff, "%08x %08x\n", length, current);
+	res = fprintf(fp, "%s",buff);
+	if(res < 0) {
+		fclose (fp);
+		return -1;	
+	}
+
+	fclose (fp);
+	return 0;	//on success
+}
+
+int32_t PHEMAP_Chain_peekLink(
+		const char * const db_name,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		uint32_t chain_len,		//quanti link voglio estrarre
+		uint8_t senti_flag,		//vuoi avere le sentinelle?
 		PHEMAP_Chain_t * const chain)
 {
 	// int fseek(FILE *fp, long distanza, int partenza)
@@ -100,12 +221,13 @@ int32_t PHEMAP_Chain_load(
 	int res = 0;
 	char buff[50];
 
-	res = sprintf(buff, "%016lx", device_id);
+	res = sprintf(buff, "%016lx", device_id);		//aggiungi la logica per chain_id
 	char dbase[strlen(db_name)+16+1];
 
 	strcpy(dbase, db_name);
 	strcat(dbase, buff);
 
+	//controllo che il file esista
 	FILE * fp;
 	fp = fopen (dbase,"r");
 	if(fp==NULL)
@@ -113,20 +235,44 @@ int32_t PHEMAP_Chain_load(
 		return -1;
 	}
 
+	int32_t length = 0;
 	//leggo la lunghezza della chain 
-	res = fscanf(fp, "%x", &chain->length);	
-	printf("lenght: %x\n", chain->length);	
+	res = fscanf(fp, "%x", &length);	
+	printf("lenght: %x\n", length);	
 	if(res == EOF) {
 		fclose (fp);
 		return -1;	
 	}
 
+	int32_t current = 0;
 	//leggo il link a cui sono arrivato 
-	res = fscanf(fp, "%x", &chain->current);
-	printf("current: %x\n", chain->current);	
+	res = fscanf(fp, "%x", &current);
+	printf("current: %x\n", current);	
 	if(res == EOF) {
 		fclose (fp);
 		return -1;	
+	}
+
+	// controllo che il numero di link richiesti non sfori la dimensione della chain 
+	if (chain_len > (length - current)) //visto che posso volere chain_len link non sentinelle 
+	{									//devo contare anche le possibili sentinelle
+		return -1; //forse ritorna un errore per dire chain exaution
+	}									//magari può entrare nel controllo di sotto
+
+	if (senti_flag != RET_SENTINEL)	//non voglio le sentinelle 
+	{
+		//controllo che current non sia una sentinella 	
+		if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+		{
+			current++;
+		}	
+	}
+
+	int size = 2*current*sizeof(PHEMAP_Link_t) + current;
+	res = fseek(fp,size, SEEK_CUR);
+	if(res != 0){
+		fclose (fp);
+		return res;	//oppure -1
 	}
 
 	//leggo i link della chain
@@ -134,9 +280,12 @@ int32_t PHEMAP_Chain_load(
 	buff_b[2] = '\n';
 	uint8_t * read_ptr;
 	int32_t byte_read;
+	size = 2*sizeof(PHEMAP_Link_t) + 1;
 
-	printf("Enter the chain link reading\n");
-	for(int i = 0; i < chain->length+1; i++){
+	printf("Enter the chain link reading\n");			//DEL ME 
+	for(int i = 0; i < chain_len; i++){			//leggo chain_len link
+		printf("iteration %d\n",i);			//DEL ME 
+		
 		read_ptr = (uint8_t*) &chain->links[i];
 		
 		res = fscanf(fp, "%s", buff);
@@ -147,10 +296,46 @@ int32_t PHEMAP_Chain_load(
 
 		for (int j = 0; j < sizeof(PHEMAP_Link_t); j++)
 		{
-			memcpy(buff_b,&buff[2*j],2);
+			memcpy(buff_b,&buff[2*j],2);						//necessaria per il \n
 			sscanf(buff_b,"%x", &byte_read);
 			read_ptr[j] = (uint8_t)(byte_read & 0x000000FF);
 		}
+
+		current++;
+		printf("current %d\n",current);			//DEL ME 
+		if (senti_flag != 0)	//non voglio le sentinelle 
+		{
+			//controllo che current non sia una sentinella 
+			if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+			{
+				current++;
+				res = fseek(fp,size, SEEK_CUR);
+				if(res != 0){
+					fclose (fp);
+					return res;	//oppure -1
+				}
+			}	
+		}
+	}
+	
+	fclose (fp);
+
+	//riapro il file in lettura/scrittura
+	fp = fopen (dbase,"r+");
+	if(fp==NULL)
+	{
+		return -1;
+	}
+
+	chain->current = 0;
+	chain->length = chain_len;
+
+	//scrivo i campi della chain sul db
+	res = sprintf(buff, "%08x %08x\n", length, current);
+	res = fprintf(fp, "%s",buff);
+	if(res < 0) {
+		fclose (fp);
+		return -1;	
 	}
 
 	fclose (fp);
