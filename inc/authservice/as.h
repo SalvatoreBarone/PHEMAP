@@ -35,7 +35,7 @@ typedef struct
 {
 	char * database_name;		//io lo farei statico
 	channel_t chnl;
-	PHEMAP_Chain_t chains[DEVICE_NUM];		//una chain per ogni dev con cui può comunicare
+	PHEMAP_Chain_t chains[DEVICE_NUM];		//una chain per ogni dev con cui può comunicare //serve?
 }
 PHEMAP_AS_t;
 
