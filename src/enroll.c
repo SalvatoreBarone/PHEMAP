@@ -74,62 +74,84 @@ int main(int argc, char** argv){
         // {
         //     printf("Error on Chain Updating\n");
         // }
-
-        PHEMAP_Chain_t chain_read;
-
-        for (size_t i = 1; i < 5; i++)
+        printf("lenght: %x\n", chain.length);	
+        printf("current: %x\n", chain.current);	
+        uint8_t * print_ptr;
+        for (size_t j = 0; j < chain.length; j++)
         {
-            bzero(&chain_read, sizeof(chain_read));
-
-            printf("loading chain %d\n",i);
-            res = PHEMAP_Chain_load("./dbchain/",i,0, &chain_read);
-            if (res < 0)
+            print_ptr = (uint8_t*) chain.links[j];
+            for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
             {
-                printf("chain not found\n");
-                continue;
+                printf("%02x ", print_ptr[k]);
             }
+            printf("\n");
+        }
+
+        // PHEMAP_Link_t link_read;
+        // for (int i = 0; i < 7; i++)
+        // {
+        //     if (0 != PHEMAP_Chain_getNextLink("./dbchain/",1,0,&link_read))
+        //     {
+        //         printf("Problem while reading link %d\n", i);
+        //         break;
+        //     }
+            
+        //     print_ptr = (uint8_t*) &link_read;
+        //     for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+        //     {
+        //         printf("%02x ", print_ptr[k]);
+        //     }
+        //     printf("\n");
             
 
-            //---------------------------------------------------//
-            printf("\nread lenght: %x\n", chain_read.length);	
-			printf("read current: %x\n", chain_read.current);	
-            uint8_t * print_ptr;
-            for (size_t j = 0; j < chain_read.length+1; j++)
-            {
-                print_ptr = (uint8_t*) chain_read.links[j];
-                for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
-                {
-                    printf("%02x ", print_ptr[k]);
-                }
-                printf("\n");
-            }
-            printf("lenght: %x\n", chain.length);	
-			printf("current: %x\n", chain.current);	
-            for (size_t j = 0; j < chain.length+1; j++)
-            {
-                print_ptr = (uint8_t*) chain.links[j];
-                for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
-                {
-                    printf("%02x ", print_ptr[k]);
-                }
-                printf("\n");
-            }
-            //---------------------------------------------------//
-            res = memcmp(
-                    &chain_read,
-                    &chain,
-                    sizeof(PHEMAP_Chain_t));
-            printf("res: %d", res);
-            fflush(stdout);
-            if (res == 0)
-            {
-                printf("Stored correctly\n");
-            }
-            else
-            {
-                printf("Stored incorrectly\n");
-            }
-        }
+        // }
+        
+        // PHEMAP_Chain_t chain_read;
+
+        // for (size_t i = 1; i < 5; i++)
+        // {
+        //     bzero(&chain_read, sizeof(chain_read));
+
+        //     printf("loading chain %d\n",i);
+        //     // res = PHEMAP_Chain_load("./dbchain/",i,0, &chain_read);
+        //     res = PHEMAP_Chain_peekLink("./dbchain/",i,0,7,1,&chain_read);
+        //     // res = PHEMAP_Chain_peekLink("./dbchain/",i,0,chain.length,1,&chain_read);
+        //     if (res < 0)
+        //     {
+        //         printf("chain not found\n");
+        //         continue;
+        //     }
+            
+
+        //     //---------------------------------------------------//
+        //     printf("\nread lenght: %x\n", chain_read.length);	
+		// 	printf("read current: %x\n", chain_read.current);	
+        //     uint8_t * print_ptr;
+        //     for (size_t j = 0; j < chain_read.length; j++)
+        //     {
+        //         print_ptr = (uint8_t*) chain_read.links[j];
+        //         for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+        //         {
+        //             printf("%02x ", print_ptr[k]);
+        //         }
+        //         printf("\n");
+        //     }
+        //     //---------------------------------------------------//
+        //     res = memcmp(
+        //             &chain_read,
+        //             &chain,
+        //             sizeof(PHEMAP_Chain_t));
+        //     printf("res: %d", res);
+        //     fflush(stdout);
+        //     if (res == 0)
+        //     {
+        //         printf("Stored correctly\n");
+        //     }
+        //     else
+        //     {
+        //         printf("Stored incorrectly\n");
+        //     }
+        // }
     }
     else
     {
