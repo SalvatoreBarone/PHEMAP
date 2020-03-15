@@ -55,13 +55,13 @@ static void PHEMAP_AS_buildInitRequest(
 	for (size_t i = 0; i < sizeof(PHEMAP_Link_t); i++)
 		tmp_ptr1[i] = tmp_ptr2[i] = rand();
 
-	for (uint32_t j = 1; j < SENTINEL-1; j++)//questo sentinel non basta ci vuole chain.current
+	for (uint32_t j = 1; j < SENTINEL-1; j++)
 		memxor(	&message->payload.init_req.v_1, 
 				&chain->links[j], 
 				sizeof(PHEMAP_Link_t));
 
 	memxor(	&message->payload.init_req.v_2, 
-			&chain->links[SENTINEL-1],         //anche qua current 
+			&chain->links[SENTINEL-1],          
 			sizeof(PHEMAP_Link_t));
 
 }
@@ -93,18 +93,18 @@ static int32_t PHEMAP_AS_checkInitReply(
 
     PHEMAP_Link_t gen_link, recv_link;
 
-	memcpy(&gen_link, &chain->links[SENTINEL], sizeof(PHEMAP_Link_t));   //serve anche current //forse serve il pointer
-	memxor(&gen_link, &chain->links[SENTINEL+1], sizeof(PHEMAP_Link_t)); //serve current
+	memcpy(&gen_link, &chain->links[SENTINEL], sizeof(PHEMAP_Link_t));  
+	memxor(&gen_link, &chain->links[SENTINEL+1], sizeof(PHEMAP_Link_t)); 
 
-	memcpy(&recv_link, &message->payload.init_reply.d_1, sizeof(PHEMAP_Link_t));  //forse serve il pointer
+	memcpy(&recv_link, &message->payload.init_reply.d_1, sizeof(PHEMAP_Link_t)); 
 	memxor(&recv_link, &message->payload.init_reply.d_2, sizeof(PHEMAP_Link_t));
 	
     if (0 != memcmp(&gen_link, &recv_link, sizeof(PHEMAP_Link_t)))
 		return -1;
 
 	// solo quando tutto è andato bene estraggo il nonce dal messaggio
-	memcpy(nonce, &message->payload.init_reply.d_1, sizeof(PHEMAP_Link_t));  //forse serve il pointer
-	memxor(nonce, &chain->links[SENTINEL], sizeof(PHEMAP_Link_t));   //serve anche current
+	memcpy(nonce, &message->payload.init_reply.d_1, sizeof(PHEMAP_Link_t));  
+	memxor(nonce, &chain->links[SENTINEL], sizeof(PHEMAP_Link_t));   
 	
     return 0;
 }
@@ -168,14 +168,14 @@ int32_t PHEMAP_AS_PHEMAPInit(
 	printf("estraggo la chain\n");			//DELME
 
 	// estraggo la chain del device con cui voglio parlare
-	if (-1 == PHEMAP_Chain_load(
+	if (-1 == PHEMAP_Chain_peekLink(
 						as->database_name, 
 						device_id, 
-						0, 
+						0,
+						SENTINEL+3,
+						RET_SENTINEL,
 						&chain))
 		return -1;
-    
-    //controllare che ci siano almeno SENTINEL + 3 link rimanenti nella chain 
 
 	printf("creo il messaggio init req\n");			//DELME
 
@@ -229,20 +229,9 @@ int32_t PHEMAP_AS_PHEMAPInit(
     // invio del messaggio di init request
     while (ch_msg_push(&as->chnl, &msg)!=0);
 
-	printf("aggiorno la chain\n");			//DELME
-
 	// il link S+3 è la root sentinel, che non deve essere usata. Per questo
 	// motivo, se l'inizializzazione è avvenuta correttamente, si fa avanzare
 	// il puntatore al link corrente di SENTINEL + 4 posizioni.
-	// as->chains[device_id].current =  chain.current + SENTINEL + 4;   //prob non serve che l'as abbia in mem le chain
-	chain.current += SENTINEL + 4;
-    
-    if (-1 == PHEMAP_Chain_update(
-						as->database_name, 
-						device_id, 
-						0, 
-						&chain))
-		return -1;
     
 	return 0;
 }
