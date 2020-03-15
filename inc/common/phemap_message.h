@@ -110,6 +110,20 @@ typedef struct
 }
 PHEMAP_Salt_Reply_t;
 
+typedef struct
+{
+	PHEMAP_Link_t l_1;
+	PHEMAP_Link_t body;
+}
+PHEMAP_Verification_Requ_t;
+
+typedef struct
+{
+	PHEMAP_Link_t l_2;
+	PHEMAP_Link_t body;
+}
+PHEMAP_Verification_Reply_t;
+
 /**
  * @brief PHEMAP message.
  *
@@ -145,6 +159,14 @@ typedef struct PHEMAP_PROTOCOL_MESSAGE
 		PHEMAP_Init_Ack_t init_ack; /**< 
 			@f$\lbrace l_2; \; v_3 \rbrace = \lbrace l_2; m \oplus l_{i+S+2} \rbrace@f$,
 			if the message is an initialization ack; */
+
+		PHEMAP_Verification_Requ_t verify_req; /**< 
+			@f$\lbrace l_1; \; l_2 \rbrace = \lbrace l_2; m \oplus l_{i+S+2} \rbrace@f$,
+			if the message is an initialization ack; */ //TODO
+
+		PHEMAP_Verification_Reply_t verify_reply; /**< 
+			@f$\lbrace l_2; \; v_3 \rbrace = \lbrace l_2; m \oplus l_{i+S+2} \rbrace@f$,
+			if the message is an initialization ack; */ //TODO
 
 		PHEMAP_Carnet_Requ_t carnet_req; /**<
 			@f$\lbrace G;l_i \rbrace@f$ if the message is a salt-installation
