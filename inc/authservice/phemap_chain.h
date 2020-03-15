@@ -29,6 +29,9 @@
 #include "as_config.h"
 #include "typedefs.h"
 
+#define RET_SENTINEL 0					//vedere se questo è il posto giusto
+#define RET_NO_SENTINEL 1
+
 typedef struct
 {
 	int32_t length; 								/**< Actual length of the chain */
@@ -42,12 +45,24 @@ PHEMAP_Chain_t;
 int32_t PHEMAP_Chain_createDatabase(
 		const char * const databasename);
 
-int32_t PHEMAP_Chain_load(
-		const char * const databasename,
+// int32_t PHEMAP_Chain_load(
+// 		const char * const databasename,
+// 		PHEMAP_Device_ID_t device_id,
+// 		uint32_t chain_id,
+// 		PHEMAP_Chain_t * const chain);
+int32_t PHEMAP_Chain_getNextLink(
+		const char * const db_name,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
-		PHEMAP_Chain_t * const chain);
+		PHEMAP_Link_t * const link);
 
+int32_t PHEMAP_Chain_peekLink(
+		const char * const db_name,
+		PHEMAP_Device_ID_t device_id,
+		uint32_t chain_id,
+		uint32_t chain_len,
+		uint8_t sentinel,
+		PHEMAP_Chain_t * const chain);
 
 int32_t PHEMAP_Chain_store(
 		const char * const databasename,
