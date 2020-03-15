@@ -172,7 +172,7 @@ int32_t PHEMAP_GenerateChain(
 	} 
 	while (++i < maxChainLength && exhausted != 0);
 	
-	chain->length = i-1;
+	chain->length = i;
 	chain->current = 0;
 
 	fflush(stdout);
