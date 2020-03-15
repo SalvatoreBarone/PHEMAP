@@ -12,7 +12,7 @@ set (
 	${CMAKE_SOURCE_DIR}/src/device/phemap_dev_phi.c
 	${CMAKE_SOURCE_DIR}/src/device/phemap_dev_init.c
 	${CMAKE_SOURCE_DIR}/src/device/phemap_dev_enroll.c
-	# ${CMAKE_SOURCE_DIR}/src/device/phemap_dev_verification.c
+	${CMAKE_SOURCE_DIR}/src/device/phemap_dev_verification.c
 	# ${CMAKE_SOURCE_DIR}/src/device/phemap_dev_salted.c
 	# ${CMAKE_SOURCE_DIR}/src/device/phemap_dev_babel_chain.c
 
@@ -35,7 +35,7 @@ set (
 	${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_phi.h
 	${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_init.h
 	${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_enroll.h
-	# ${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_verification.h
+	${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_verification.h
 	# ${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_salted.h
 	# ${CMAKE_SOURCE_DIR}/inc/device/phemap_dev_babel_chain.h
 
