@@ -27,13 +27,18 @@
 
 #include "device.h"
 
-uint32_t PHEMAP_Device_getNextLink(
-		PHEMAP_Device_t * const device,			//necessario per la PUF
-		PHEMAP_Link_t * const link,
-		uint32_t i);
+#define RET_SENTINEL 0					//vedere se questo è il posto giusto
+#define RET_NO_SENTINEL 1
 
-uint32_t PHEMAP_Device_updateQ(
-		PHEMAP_Device_t * const device,
-		uint32_t i);
+uint32_t PHEMAP_Device_peekLink(
+		PHEMAP_Device_t * const device,	
+		uint32_t i,
+		uint8_t senti_flag,
+		PHEMAP_Link_t * const link);
+
+uint32_t PHEMAP_Device_getNextLink(
+		PHEMAP_Device_t * const device,	
+		uint8_t senti_flag,
+		PHEMAP_Link_t * const link);
 
 #endif
