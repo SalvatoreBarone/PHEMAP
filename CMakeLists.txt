@@ -46,7 +46,7 @@ add_custom_target(runEnroll
 )
 
 # add the executable
-add_executable(phemap_initMain ${CMAKE_SOURCE_DIR}/src/phemap_init_test.c)
+add_executable(phemap_commMain ${CMAKE_SOURCE_DIR}/src/phemap_comm_test.c)
 
 # target runPeer is only build when `make runEnroll` is issued
 add_custom_target(runPhemapInit
@@ -60,7 +60,7 @@ if(LIBRT)
 # target_link_libraries(peerMain PRIVATE Threads::Threads channel transport phemapas_enroll ${LIBRT})
 target_link_libraries(peerMain PRIVATE Threads::Threads channel transport phemapas ${LIBRT})
 target_link_libraries(enrollMain PRIVATE Threads::Threads channel transport phemapas phemapdev ${LIBRT})
-target_link_libraries(phemap_initMain PRIVATE Threads::Threads channel transport phemapas phemapdev ${LIBRT})
+target_link_libraries(phemap_commMain PRIVATE Threads::Threads channel transport phemapas phemapdev ${LIBRT})
 #target_link_libraries(target_name ${LIBRT})
 endif()
 
