@@ -25,6 +25,7 @@
 #include "typedefs.h"
 #include "phemap_message.h"
 #include "memxor.h"
+#include "linux_timer.h"
 
 /**
  * @brief Checks if a received verification request is well formed. 
@@ -106,8 +107,25 @@ int32_t PHEMAP_AS_VerifiedRecv(
     
 	printf("attendo la richiesta dal device\n");			//DELME
 	// ricezione della richiesta
-	while (ch_msg_pop(&as->chnl, &msg)!=0);	
-	
+	// while (ch_msg_pop(&as->chnl, &msg)!=0);				//così è bloccante
+	/* timer creation */
+    linux_timer_t tim;
+    linux_create_timer(&tim, 100);			//fai una define diviso 5
+	int32_t elaps = 0;
+	int32_t res = 1;
+	// Si aspetta la ricezione della richiesta
+	res = ch_msg_pop(&as->chnl, &msg);
+	while (res!=0 && elaps!=5)
+	{
+        linux_wait_period(&tim);
+		res = ch_msg_pop(&as->chnl, &msg);
+		elaps++;
+	}	
+	if(res != 0)
+	{
+		return -1;
+	}
+
 	PHEMAP_Chain_t chain;
 
 	printf("estraggo la chain\n");			//DELME
@@ -116,7 +134,7 @@ int32_t PHEMAP_AS_VerifiedRecv(
 						as->database_name, 
 						device_id, 
 						0,
-						4,//di 3 elementi
+						3,//di 3 elementi
 						RET_NO_SENTINEL,
 						&chain))
 	{
@@ -136,7 +154,10 @@ int32_t PHEMAP_AS_VerifiedRecv(
 
 	printf("invio la risposta\n");			//DELME
 	// invio del messaggio di init request
-    while (ch_msg_push(&as->chnl, &msg)!=0);
+    if(ch_msg_push(&as->chnl, &msg)!=0)
+	{
+		return -1;
+	}
 
 	return 0;
 }

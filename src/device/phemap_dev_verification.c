@@ -24,6 +24,7 @@
 #include "phemap_message.h"
 #include "phemap_dev_phi.h"
 #include "memxor.h"
+#include "linux_timer.h"
 
 /**
  * @brief Builds a PHEMAP init reply message
@@ -128,11 +129,29 @@ int32_t PHEMAP_Device_VerifiedSend( PHEMAP_Device_t * const device,
 
 	printf("invio la richiesta\n");			//DELME
 	// Si invia la richiesta al verifier
-    while (ch_msg_push(&device->chnl, &msg)!=0);
+    // while (ch_msg_push(&device->chnl, &msg)!=0);
+    if(ch_msg_push(&device->chnl, &msg)!=0)
+	{
+		return -1;
+	}
 
 	printf("attendo la ricezione dell'ack\n");			//DELME
+	/* timer creation */
+    linux_timer_t tim;
+    linux_create_timer(&tim, 100);			//fai una define diviso 5
+	int32_t elaps = 0;
+	int32_t res = 1;
 	// Si aspetta la ricezione dell'ack per autorizzare il verifier
-	while (ch_msg_pop(&device->chnl, &msg)!=0);	
+	while (res!=0 && elaps!=5)				//così conti 5 volte e sei più responsive
+	{
+        linux_wait_period(&tim);
+		res = ch_msg_pop(&device->chnl, &msg);
+		elaps++;
+	}	
+	if(res != 0)
+	{
+		return -1;
+	}
 
 	printf("controllo l'ack\n");			//DELME
 	// Se l'ack viene ricevuto, si passa alla sua analisi per
