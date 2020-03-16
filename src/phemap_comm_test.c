@@ -60,7 +60,7 @@ int main(int argc, char** argv){
         res = PHEMAP_AS_VerifiedRecv(&as_inst,1,&as_link);
         if (res<0)
         {
-            printf("Error during PHEMAP Init\n");
+            printf("Error during PHEMAP Receive\n");
         }
         //---------------------------------------------------//
         uint8_t * print_ptr;
