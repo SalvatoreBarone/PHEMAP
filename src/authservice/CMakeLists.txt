@@ -8,6 +8,7 @@ set (
     ${CMAKE_SOURCE_DIR}/src/authservice/phemap_as_enroll.c
     ${CMAKE_SOURCE_DIR}/src/authservice/phemap_as_init.c
     ${CMAKE_SOURCE_DIR}/src/authservice/phemap_as_verification.c
+    ${CMAKE_SOURCE_DIR}/src/authservice/phemap_as_babel_chain.c
 
 )
 
@@ -22,7 +23,7 @@ set (
     ${CMAKE_SOURCE_DIR}/inc/authservice/phemap_as_enroll.h
     ${CMAKE_SOURCE_DIR}/inc/authservice/phemap_as_init.h
     ${CMAKE_SOURCE_DIR}/inc/authservice/phemap_as_verification.h
-
+    ${CMAKE_SOURCE_DIR}/inc/authservice/phemap_as_babel_chain.h
 )
 
 #controlla se è corretta la sintassi
