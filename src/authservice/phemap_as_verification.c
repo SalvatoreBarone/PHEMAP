@@ -80,16 +80,16 @@ static int32_t PHEMAP_AS_checkVerificationRequest(
  * @param [in]	data
  * 				Pointer to the data buffer container.
  */
-static void PHEMAP_AS_buildVerificationReply(
+static void PHEMAP_AS_buildVerificationAck(
 		PHEMAP_Chain_t * const chain,
 		PHEMAP_Message_t * const message)                           //questo tipo ovviamente va cambiatoTODO
 {
 	memset(message, 0, sizeof(PHEMAP_Message_t));
 
-	message->type = verification_reply;
+	message->type = verification_ack;
 
 	// Copia dell'attuale link della chain
-	memcpy( &message->payload.verify_reply.l_2, 
+	memcpy( &message->payload.verify_ack.l_2, 
 			&chain->links[2], 
 			sizeof(PHEMAP_Link_t));
 }
@@ -150,7 +150,7 @@ int32_t PHEMAP_AS_VerifiedRecv(
 	}
 
 	printf("creo l'ack\n");			//DELME
-	PHEMAP_AS_buildVerificationReply(&chain, message);
+	PHEMAP_AS_buildVerificationAck(&chain, message);
 
 	printf("invio la risposta\n");			//DELME
 	// invio del messaggio di init request
