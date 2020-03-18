@@ -36,7 +36,6 @@
 typedef struct PHEMAP_CARNET
 {
 	uint32_t length; /**< Carnet length */
-	uint32_t counter; /**< Used tickets */
 
 	PHEMAP_Link_t tickets[ABSOLUTE_MAX_CARNET_LENGTH]; /**< 
 		Tickets. Only the first length-1 are valid tickets */
