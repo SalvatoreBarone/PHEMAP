@@ -86,13 +86,13 @@ static int32_t PHEMAP_Device_checkVerificationReply(
 		PHEMAP_Device_t * const device,
 		PHEMAP_Message_t * const message)
 {
-	if (verification_reply != message->type)
+	if (verification_ack != message->type)
 		return -1;
 
     PHEMAP_Link_t link;
 	PHEMAP_Device_getNextLink(device, RET_NO_SENTINEL, &link);
 
-    if (0 != memcmp(&message->payload.verify_reply.l_2,
+    if (0 != memcmp(&message->payload.verify_ack.l_2,
                     &link, 
                     sizeof(PHEMAP_Link_t)))
     {
