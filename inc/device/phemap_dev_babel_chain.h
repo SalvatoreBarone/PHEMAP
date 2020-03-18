@@ -30,8 +30,7 @@ int32_t PHEMAP_Device_BCconnectToDev(
 		uint32_t max_messages);
 
 int32_t PHEMAP_Device_BCNotifyRecv(
-		PHEMAP_Device_t * const device,
-		PHEMAP_Device_ID_t dest_id);
+		PHEMAP_Device_t * const device);
 
 // int32_t PHEMAP_Device_closePeerConnection(PHEMAP_Device_t * const device);
 

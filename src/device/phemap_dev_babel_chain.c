@@ -276,8 +276,7 @@ int32_t PHEMAP_Device_BCconnectToDev(
  * be returned.
  */
 int32_t PHEMAP_Device_BCNotifyRecv(
-		PHEMAP_Device_t * const device,
-		PHEMAP_Device_ID_t dest_id)
+		PHEMAP_Device_t * const device)
 {
     ch_msg_t msg;
 	msg.cli_id = 0;				//qua va data una macro tipo VERIF_ADDR
