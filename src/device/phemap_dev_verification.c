@@ -54,8 +54,14 @@ static void PHEMAP_Device_buildVerificationRequest(
 	message->type = verification_request;
 
 	printf("scrivo i campi del messaggio\n");			//DELME
-	PHEMAP_Device_getNextLink(device, RET_NO_SENTINEL, &message->payload.verify_req.l_1);
-	PHEMAP_Device_getNextLink(device, RET_NO_SENTINEL, &message->payload.verify_req.body);
+	PHEMAP_Device_getNextLink(device, 
+								&device->verifier_ent, 
+								RET_NO_SENTINEL, 
+								&message->payload.verify_req.l_1);
+	PHEMAP_Device_getNextLink(device, 
+								&device->verifier_ent, 
+								RET_NO_SENTINEL, 
+								&message->payload.verify_req.body);
 	memxor(&message->payload.verify_req.body, data, sizeof(PHEMAP_Link_t));
 }
 
@@ -90,7 +96,7 @@ static int32_t PHEMAP_Device_checkVerificationReply(
 		return -1;
 
     PHEMAP_Link_t link;
-	PHEMAP_Device_getNextLink(device, RET_NO_SENTINEL, &link);
+	PHEMAP_Device_getNextLink(device, &device->verifier_ent, RET_NO_SENTINEL, &link);
 
     if (0 != memcmp(&message->payload.verify_ack.l_2,
                     &link, 
