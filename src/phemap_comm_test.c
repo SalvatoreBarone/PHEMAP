@@ -108,7 +108,11 @@ int main(int argc, char** argv){
         }
 
         PHEMAP_Link_t dev_link;
-        PHEMAP_Device_getNextLink(&dev_inst, RET_NO_SENTINEL, &dev_link);
+        // PHEMAP_Device_getNextLink(&dev_inst, 
+        //                             &dev_inst.verifier_ent, 
+        //                             RET_NO_SENTINEL, 
+        //                             &dev_link);
+
         char * cose = (uint8_t*)&dev_link;
         cose[0] = 104;
         cose[1] = 101;
