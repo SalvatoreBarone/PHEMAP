@@ -82,22 +82,28 @@ typedef enum PHEMAP_DEVICE_STATUS
 PHEMAP_Device_Status_t;
 
 
-typedef struct PHEMAP_BC_DEVICE
+typedef struct PHEMAP_ENTITY
 {
 	PHEMAP_Device_ID_t dev_id; /**< Each device has a unique idenfifier
-		used by the AS in order to distinguish devices each other. Device
-		fingerprint must be kept secret, so this implementation does not
-   		make use of it to distinguish devices.  */
+		used by the AS in order to distinguish devices each other. */
+
+	uint32_t counter;	/**< Link counter */
 
 	PHEMAP_Link_t Q; /**< Pointer to the secure register Q. It holds the last
 						computed link on the chain. 
 						@note This memory area must ne inside a secure
 						perimeter.*/
+} 
+PHEMAP_Entity_t;
+
+typedef struct PHEMAP_BC_ENTITY
+{
+	PHEMAP_Entity_t entity;
 
 	PHEMAP_Carnet_t carnet; /**< Babel-chain PHEMAP carnet used to communicate
 								with a peer device */
 } 
-PHEMAP_Bcdev_t;
+PHEMAP_BC_Entity_t;
 
 typedef struct PHEMAP_DEVICE
 {
@@ -106,28 +112,23 @@ typedef struct PHEMAP_DEVICE
 		fingerprint must be kept secret, so this implementation does not
    		make use of it to distinguish devices.  */
 
+	PHEMAP_Device_Status_t status; /**< PHEMAP protocol device status */
+
 	PHEMAP_Device_Fingerprint_t fingerprint; /**< Device fingerprint */
 
 	RC5_64RB_Word_t subkeys[(RC5_ENCRYPTION_ROUNDS + 1) << 1]; /**<
 		Subkeys used by the RC5 encryption alghorithm */
 
-	PHEMAP_Device_Status_t status; /**< PHEMAP protocol device status */
-
-	uint32_t counter;	/**< Link counter */
-
-	PHEMAP_Link_t Q; /**< Pointer to the secure register Q. It holds the last
-						computed link on the chain. 
-						@note This memory area must ne inside a secure
-						perimeter.*/
-
 	channel_t chnl;	/**< Channel used to communicate with other device */
 
-	PHEMAP_Bcdev_t BC_device[BC_DEV_NUM]; /**< Babel-chain PHEMAP carnet used to communicate
-								with a peer device */
+	PHEMAP_Entity_t verifier_ent; /**< All the information necessary to 
+									communicate with the verifier */
 
-	// client_t gateway; /**< TCP client to communicate with the reference
-	// 					gateway */
+	PHEMAP_Entity_t recv_ent; /**< All the information necessary to 
+									receive data from device */
 
+	PHEMAP_BC_Entity_t send_ent; /**< All the information necessary to 
+									send data to device */
 } 
 PHEMAP_Device_t;
 
