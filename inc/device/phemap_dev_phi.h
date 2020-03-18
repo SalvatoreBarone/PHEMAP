@@ -32,12 +32,14 @@
 
 uint32_t PHEMAP_Device_peekLink(
 		PHEMAP_Device_t * const device,	
+		PHEMAP_Entity_t * const entity,
 		uint32_t i,
 		uint8_t senti_flag,
 		PHEMAP_Link_t * const link);
 
 uint32_t PHEMAP_Device_getNextLink(
 		PHEMAP_Device_t * const device,	
+		PHEMAP_Entity_t * const entity,
 		uint8_t senti_flag,
 		PHEMAP_Link_t * const link);
 
