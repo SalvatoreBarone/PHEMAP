@@ -98,7 +98,6 @@ int32_t PHEMAP_Device_Init(
 {
 	device->device_id = device_id;
 	device->status = inactive;
-	device->counter = 0;
 
 	// Recovery della fingerprint
 // 	FUZZYEX_RecoverFingerprint(helper_data, device->fingerprint);
