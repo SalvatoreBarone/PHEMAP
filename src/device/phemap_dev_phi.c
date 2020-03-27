@@ -61,15 +61,17 @@ uint32_t PHEMAP_Device_peekLink(
 		uint8_t senti_flag,
 		PHEMAP_Link_t * const link)				//challenge e response
 {
+	uint32_t senti_num = 0;
 	uint32_t counter = entity->counter;
 	for (uint32_t k = 0; k < i; k++)
 	{
 		if (senti_flag != RET_SENTINEL) //non voglio le sentinelle 
 		{
-			if ((counter % SENTINEL) == 0)
+			if ((counter % (uint32_t)SENTINEL) == 0)
 			{
 				k--;
 				counter++;
+				senti_num++;
 			}
 		}
 		
@@ -79,11 +81,11 @@ uint32_t PHEMAP_Device_peekLink(
 		// 		link, 
 		// 		link);
 		PHEMAP_DEV_linkGen(device, 0, link, link);
-		printf("genero il link %d-th\n",k);			//DELME
-
+		counter++;
+		// printf("genero il link %d-th\n",k);			//DELME
 	}
 
-	return 0;
+	return senti_num;
 }
 
 uint32_t PHEMAP_Device_getNextLink(
@@ -92,9 +94,10 @@ uint32_t PHEMAP_Device_getNextLink(
 		uint8_t senti_flag,
 		PHEMAP_Link_t * const link)				//contiene il successivo link nella chain
 {
+	// printf("entity->counter: %d", entity->counter);				//DELME
 	if (senti_flag != RET_SENTINEL) //non voglio le sentinelle 
 		{
-			if ((entity->counter % SENTINEL) == 0)
+			if ((entity->counter % (uint32_t)SENTINEL) == 0)	//sembra che ci siano prob a trovare le sentinelle 
 			{
 				// RC5_64RB_Encrypt(
 				// 		RC5_ENCRYPTION_ROUNDS, 
@@ -115,7 +118,7 @@ uint32_t PHEMAP_Device_getNextLink(
 	entity->counter++;
 
 	memcpy(link, &entity->Q,sizeof(PHEMAP_Link_t));
-	printf("genero il link\n");	
+	// printf("genero il link\n");							//DELME
 
 	return 0;
 }
