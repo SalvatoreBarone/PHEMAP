@@ -30,6 +30,7 @@
 #include "phemap_message.h"
 #include "phemap_dev_phi.h"
 #include "memxor.h"
+#include "linux_timer.h"
 
 /**
  * @brief Checks if an init request is well formed. 
@@ -235,6 +236,23 @@ int32_t PHEMAP_Device_PHEMAPInit(PHEMAP_Device_t * const device)
 	// È ovvio che, qualora venga ricevuta una risposta retry, è doveroso
 	// chiamate questa funzione.
 	while (ch_msg_pop(&device->chnl, &msg)!=0);	
+	// /* timer creation */
+    // linux_timer_t tim;
+    // linux_create_timer(&tim, 100);			//fai una define diviso 5
+	// int32_t elaps = 0;
+	// int32_t res = 1;
+	// // Si aspetta la ricezione della risposta 
+    // res = ch_msg_pop(&device->chnl, &msg);
+	// while (res!=0 && elaps!=5)				//così conti 5 volte e sei più responsive
+	// {
+    //     linux_wait_period(&tim);
+	// 	res = ch_msg_pop(&device->chnl, &msg);
+	// 	elaps++;
+	// }	
+	// if(res != 0)
+	// {
+	// 	return -1;
+	// }
 
 	printf("controllo il messaggio\n");			//DELME
 
@@ -256,12 +274,26 @@ int32_t PHEMAP_Device_PHEMAPInit(PHEMAP_Device_t * const device)
 
 	// Si invia la risposta all'authentication service
     // while (ch_msg_push(&device->chnl, &msg)!=0);
-    if (ch_msg_push(&device->chnl, &msg)!=0);
+    if (ch_msg_push(&device->chnl, &msg)!=0)
+		return -1;
 
 	printf("attendo la ricezione dell'ack\n");			//DELME
 
 	// Si aspetta la ricezione dell'ack per completare l'autenticazione
-	while (ch_msg_pop(&device->chnl, &msg)!=0);				
+	while (ch_msg_pop(&device->chnl, &msg)!=0);	
+	// elaps = 0;
+	// res = 1;
+	// // Si aspetta la ricezione della risposta 
+	// while (res!=0 && elaps!=5)				//così conti 5 volte e sei più responsive
+	// {
+    //     linux_wait_period(&tim);
+	// 	res = ch_msg_pop(&device->chnl, &msg);
+	// 	elaps++;
+	// }	
+	// if(res != 0)
+	// {
+	// 	return -1;
+	// }			
 
 	printf("controllo l'ack\n");			//DELME
 

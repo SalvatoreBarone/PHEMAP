@@ -94,6 +94,7 @@ static void PHEMAP_AS_buildBCSetupReply(
 			&chainA->links[0], 
 			sizeof(PHEMAP_Link_t));
     
+	printf("CARNET\n");
     for (int i = 0; i < carnet_length; i++)
     {
         memcpy( &message->payload.carnet_reply.carnet.tickets[i],
@@ -102,8 +103,47 @@ static void PHEMAP_AS_buildBCSetupReply(
         memxor( &message->payload.carnet_reply.carnet.tickets[i],
                 &chainB->links[i+1],
                 sizeof(PHEMAP_Link_t));
+	//---------------------------------------------------//
+	uint8_t * print_ptr;
+	
+	print_ptr = (uint8_t*) &message->payload.carnet_reply.carnet.tickets[i];
+	for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+	{
+		printf("%02x ", print_ptr[k]);
+	}
+	printf("\n");
+	//---------------------------------------------------//
+    }
+	printf("CHAIN A\n");
+	for (int i = 0; i < carnet_length; i++)
+    {
+	//---------------------------------------------------//
+	uint8_t * print_ptr;
+	
+	print_ptr = (uint8_t*) &chainA->links[i+1];
+	for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+	{
+		printf("%02x ", print_ptr[k]);
+	}
+	printf("\n");
+	//---------------------------------------------------//
+    }
+	printf("CHAIN B\n");
+	for (int i = 0; i < carnet_length; i++)
+    {
+	//---------------------------------------------------//
+	uint8_t * print_ptr;
+	
+	print_ptr = (uint8_t*) &chainB->links[i+1];
+	for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+	{
+		printf("%02x ", print_ptr[k]);
+	}
+	printf("\n");
+	//---------------------------------------------------//
     }
     message->payload.carnet_reply.carnet.length = carnet_length;
+	message->payload.carnet_reply.carnet.count = 0;
 }
 
 /**
@@ -156,13 +196,26 @@ static int32_t PHEMAP_AS_checkBCSetupAck(
     // validazione del messaggio
 	if (bc_setup_ack != message->type)
 		return -1;
-    
+	
+	// //--DELME-------------------------------------------------//
+	// uint8_t * print_ptr;
+	
+	// print_ptr = (uint8_t*) &chainB->links[carnet_length+1];
+	// for (int k = 0; k < sizeof(PHEMAP_Link_t); k++)
+	// {
+	// 	printf("%02x ", print_ptr[k]);
+	// }
+	// printf("\n");
+	// //---------------------------------------------------//
+
+	printf("controllo il link della risposta\n");			//DELME
     if (0 != memcmp(&message->payload.carnet_ack.l_carlen,
                     &chainB->links[carnet_length+1], 
                     sizeof(PHEMAP_Link_t)))
     {
 		return -1;
     }
+	printf("tutto ok\n");			//DELME
 
     return 0;
 }
@@ -176,24 +229,26 @@ int32_t PHEMAP_AS_BabelChainSetup(
 	// msg.size = sizeof(PHEMAP_Message_t);
     
 	printf("attendo la richiesta Babel Chain dal device\n");			//DELME
+	while (ch_msg_pop(&as->chnl, &msg)!=0);
+
 	// ricezione della richiesta
-	/* timer creation */
-    linux_timer_t tim;
-    linux_create_timer(&tim, 100);			//fai una define diviso 5
-	int32_t elaps = 0;
-	int32_t res = 1;
-	// Si aspetta la ricezione della richiesta
-	res = ch_msg_pop(&as->chnl, &msg);
-	while (res!=0 && elaps!=5)
-	{
-        linux_wait_period(&tim);
-		res = ch_msg_pop(&as->chnl, &msg);
-		elaps++;
-	}	
-	if(res != 0)
-	{
-		return -1;
-	}
+	// /* timer creation */
+    // linux_timer_t tim;
+    // linux_create_timer(&tim, 100);			//fai una define diviso 5
+	// int32_t elaps = 0;
+	// int32_t res = 1;
+	// // Si aspetta la ricezione della richiesta
+	// res = ch_msg_pop(&as->chnl, &msg);
+	// while (res!=0 && elaps!=5)
+	// {
+    //     linux_wait_period(&tim);
+	// 	res = ch_msg_pop(&as->chnl, &msg);
+	// 	elaps++;
+	// }	
+	// if(res != 0)
+	// {
+	// 	return -1;
+	// }
 
 	PHEMAP_Chain_t chainA;
     PHEMAP_Device_ID_t dest_id;
@@ -264,19 +319,23 @@ int32_t PHEMAP_AS_BabelChainSetup(
 		return -1;
 	}
 
-    elaps = 0;
-	res = 1;
-	// Si aspetta la ricezione dell'ack
-	while (res!=0 && elaps!=5)
-	{
-        linux_wait_period(&tim);
-		res = ch_msg_pop(&as->chnl, &msg);
-		elaps++;
-	}	
-	if(res != 0)
-	{
-		return -1;
-	}
+	printf("attendo la BCNotify ack\n");			//DELME
+	while (ch_msg_pop(&as->chnl, &msg)!=0);
+
+    // elaps = 0;
+	// res = 1;
+	// // Si aspetta la ricezione dell'ack
+	// while (res!=0 && elaps!=5)
+	// {
+    //     linux_wait_period(&tim);
+	// 	res = ch_msg_pop(&as->chnl, &msg);
+	// 	elaps++;
+	// }	
+	// if(res != 0)
+	// {
+	// 	return -1;
+	// }
+    printf("controllo la notify Babel Chain Setup\n");			//DELME
 
     if (-1 == PHEMAP_AS_checkBCSetupAck(&chainB, message, carnet_length))
 	{	
