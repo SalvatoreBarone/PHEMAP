@@ -46,22 +46,32 @@ int main(int argc, char** argv){
 
 /*_____________________________ENROLLMENT_____________________________ */    
 
-    int32_t maxChainLength = 20;
+    int32_t maxChainLength = 40;
 
     if (argv[1][0] == 'a')
     {    
         printf("AS ENROLLMENT\n");
         
+        int dev_id = 0;
+        if(argv[1][1] == '1')
+        {
+            dev_id = 1;
+        }
+        if(argv[1][1] == '2')
+        {
+            dev_id = 2;
+        }
+
         PHEMAP_Chain_t chain;
         bzero(&chain, sizeof(chain));
 
-        int res = PHEMAP_GenerateChain(&chnl,(uint64_t)1, maxChainLength, &chain);
+        int res = PHEMAP_GenerateChain(&chnl,(uint64_t)dev_id, maxChainLength, &chain);
         if (res<0)
         {
             printf("Error on Chain Generation\n");
         }
 
-        res = PHEMAP_Chain_store("./dbchain/",1,0, &chain);
+        res = PHEMAP_Chain_store("./dbchain/",dev_id,0, &chain);
         if (res<0)
         {
             printf("Error on Chain Storing\n");
@@ -164,7 +174,7 @@ int main(int argc, char** argv){
     
     fflush(stdout);
     
-    while(1);
+    // while(1);
 
     /* deinitialize the transport */ 
     ch_deinit(&chnl);
