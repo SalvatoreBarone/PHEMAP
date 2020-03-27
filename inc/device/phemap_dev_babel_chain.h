@@ -2,8 +2,10 @@
  * @file phemap_babel_chain.h
  *
  * @author Salvatore Barone <salvator.barone@gmail.com>
+ * @author Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * Copyright 2019 Salvatore Barone <salvator.barone@gmail.com>
+ * Copyright 2019 Alfonso Fezza <alfonsofezza93@gmail.com>
  *
  * This file is part of libPHEMAP.
  *
@@ -32,16 +34,14 @@ int32_t PHEMAP_Device_BCconnectToDev(
 int32_t PHEMAP_Device_BCNotifyRecv(
 		PHEMAP_Device_t * const device);
 
-// int32_t PHEMAP_Device_closePeerConnection(PHEMAP_Device_t * const device);
+int32_t PHEMAP_Device_BCsend(
+		PHEMAP_Device_t * const device,
+		PHEMAP_Device_ID_t dest_id,
+		PHEMAP_Link_t * const data);
 
-// ssize_t PHEMAP_Device_sendToPeer(
-// 		PHEMAP_Device_t * const device,
-// 		const uint8_t * const data,
-// 		size_t size);
-
-// ssize_t PHEMAP_Device_recvFromPeer(
-// 		PHEMAP_Device_t * const device,
-// 		uint8_t * const data,
-// 		size_t size);
+int32_t PHEMAP_Device_BCrecv(
+		PHEMAP_Device_t * const device,
+		PHEMAP_Device_ID_t src_id,
+		PHEMAP_Link_t * const data);
 
 #endif
