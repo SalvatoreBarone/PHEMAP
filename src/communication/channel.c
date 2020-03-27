@@ -166,7 +166,7 @@ int32_t ch_msg_pop(
 
     bytes_read = mq_receive(chnl->queue.recv_q[msg->cli_id], (char *)msg, sizeof(ch_msg_t), 0);
     if(bytes_read != sizeof(ch_msg_t)){
-        //printf("errore: %s\n" ,strerror(errno));
+        // printf("errore: %s\n" ,strerror(errno));
         return -1;          
     }
     
