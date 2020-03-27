@@ -25,6 +25,7 @@
 #include "typedefs.h"
 #include "phemap_message.h"
 #include "memxor.h"
+#include "linux_timer.h"
 
 /**
  * @brief Create a new init request message. 
@@ -194,12 +195,31 @@ int32_t PHEMAP_AS_PHEMAPInit(
 	printf("invio la richiesta\n");			//DELME
 
 	// invio del messaggio di init request
-    while (ch_msg_push(&as->chnl, &msg)!=0);
+    // while (ch_msg_push(&as->chnl, &msg)!=0);
+    if(ch_msg_push(&as->chnl, &msg)!=0)
+		return -1;
 
 	printf("attendo la risposta\n");			//DELME
 
 	// ricezione della risposta
-	while (ch_msg_pop(&as->chnl, &msg)!=0);				
+	while (ch_msg_pop(&as->chnl, &msg)!=0);
+	// /* timer creation */
+    // linux_timer_t tim;
+    // linux_create_timer(&tim, 100);			//fai una define diviso 5
+	// int32_t elaps = 0;
+	// int32_t res = 1;
+	// // Si aspetta la ricezione della risposta 
+    // res = ch_msg_pop(&as->chnl, &msg);
+	// while (res!=0 && elaps!=5)				//così conti 5 volte e sei più responsive
+	// {
+    //     linux_wait_period(&tim);
+	// 	res = ch_msg_pop(&as->chnl, &msg);
+	// 	elaps++;
+	// }	
+	// if(res != 0)
+	// {
+	// 	return -1;
+	// }			
 
     // PHEMAP_Message_t *response;
     // response = (PHEMAP_Message_t*)msg.buff;	//casto a questo tipo così da risparmiare una copia
@@ -227,7 +247,9 @@ int32_t PHEMAP_AS_PHEMAPInit(
 	printf("invio l'ack\n");			//DELME
 
     // invio del messaggio di init request
-    while (ch_msg_push(&as->chnl, &msg)!=0);
+    // while (ch_msg_push(&as->chnl, &msg)!=0);
+    if(ch_msg_push(&as->chnl, &msg)!=0)
+		return -1;
 
 	// il link S+3 è la root sentinel, che non deve essere usata. Per questo
 	// motivo, se l'inizializzazione è avvenuta correttamente, si fa avanzare
