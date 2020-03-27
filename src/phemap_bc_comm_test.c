@@ -51,21 +51,28 @@ int main(int argc, char** argv){
 	    //----------------------------------------------------------------------------------
         PHEMAP_AS_init(&as_inst, "./dbchain/");
 
+        int res;
         /* Faccio la init PHEMAP con il dispositivo 1 */
         printf("avvio la PHEMAP Init 1\n");
-        int res = PHEMAP_AS_PHEMAPInit(&as_inst, 1);
+        res = PHEMAP_AS_PHEMAPInit(&as_inst, 1);
         if (res<0)
         {
-            printf("Error during PHEMAP Init\n");
+            printf("Error during PHEMAP Init 1\n");
         }
 
         /* Faccio la init PHEMAP con il dispositivo 2 */
         printf("avvio la PHEMAP Init 2\n");
+        // do
+        // {
+        //     res = PHEMAP_AS_PHEMAPInit(&as_inst, 2);
+        //     sleep(1);
+        // } while (res<0);
         res = PHEMAP_AS_PHEMAPInit(&as_inst, 2);
         if (res<0)
         {
-            printf("Error during PHEMAP Init\n");
+            printf("Error during PHEMAP Init 2\n");
         }
+        printf("PHEMAP Init 2 completata\n");
 
         /* Attendo la richiesta PHEMAP BabelChain dal dispositivo 1 */
         printf("avvio la babelchainPHEMAP Setup 1\n");
@@ -74,6 +81,12 @@ int main(int argc, char** argv){
         {
             printf("Error during PHEMAP BabelChain setup\n");
         }
+        // do
+        // {
+        //     res = PHEMAP_AS_BabelChainSetup(&as_inst, 1);
+        //     sleep(1);
+        // } while (res<0);
+        
 
         // PHEMAP_Link_t as_link;
         // // PHEMAP_Chain_getNextLink(as_inst.database_name,1,0,&as_link);
@@ -93,6 +106,7 @@ int main(int argc, char** argv){
         // }
         // printf("\n");
         // //---------------------------------------------------//
+        printf("Comicio a looppare\n");
         
         while(1);
 
@@ -131,49 +145,65 @@ int main(int argc, char** argv){
             PHEMAP_Device_Init(&dev_inst, 2, 0);
         }
 
+        int res;
         /* Faccio la init PHEMAP con il verifier */
         printf("avvio la PHEMAP Init del device\n");
-        int res = PHEMAP_Device_PHEMAPInit(&dev_inst); 
+        // do
+        // {
+        //     res = PHEMAP_Device_PHEMAPInit(&dev_inst); 
+        //     sleep(1);
+        // } while (res < 0);
+        res = PHEMAP_Device_PHEMAPInit(&dev_inst); 
         if (res<0)
         {
-            printf("Error during Init\n");
+            printf("Error during PHEMAP Init\n");
         }
+        printf("PHEMAP Init completata\n");
 
         /* Faccio la device init */
+        // do{
+        PHEMAP_Link_t dev_msg;
+        char * cose = (uint8_t*)&dev_msg;
         if(argv[1][1] == '1')
         {
+            sleep(4);
             printf("avvio la BabelChain setup\n");
             res = PHEMAP_Device_BCconnectToDev(&dev_inst, 2, 5);
+            if (res < 0)
+            {
+                printf("Error during device connection\n");
+            }
+            
+            printf("Connessione effettuata\n");
+            strcpy(cose,"quellacavallali");
+            sleep(2);
+            PHEMAP_Device_BCsend(&dev_inst, 2, &dev_msg);
         }
         else
         {
+            sleep(2);
             printf("avvio l'attesa della Notify\n");
             res = PHEMAP_Device_BCNotifyRecv(&dev_inst);
+            if (res < 0)
+            {
+                printf("Error during device connection\n");
+            }
+            
+            printf("Connessione effettuata\n");
+            res = PHEMAP_Device_BCrecv(&dev_inst, 1, &dev_msg);
+            if (res < 0)
+            {
+                printf("Error during device receive\n");
+            }
+            else
+            {
+                printf("Ricevuto: %s\n", cose);
+            }
         }
-        if (res<0)
-        {
-            printf("Some Error was happened \n");
-        }
-
-
-        // PHEMAP_Link_t dev_link;
-        // PHEMAP_Device_getNextLink(&dev_inst, 
-        //                             &dev_inst.verifier_ent, 
-        //                             RET_NO_SENTINEL, 
-        //                             &dev_link);
-
-        // char * cose = (uint8_t*)&dev_link;
-        // cose[0] = 104;
-        // cose[1] = 101;
-        // cose[2] = 108;
-        // cose[3] = 108;
-        // cose[4] = 111;
-        // cose[5] = 032;
-        // cose[6] = 119;
-        // cose[7] = 111;
-        // cose[8] = 114;
-        // cose[9] = 108;
-        // cose[10] = 100;
+        // }while(res<0);
+        // {
+        //     printf("Some Error was happened \n");
+        // }
 
         // res = PHEMAP_Device_VerifiedSend(&dev_inst, &dev_link);
         // if (res<0)
@@ -192,6 +222,7 @@ int main(int argc, char** argv){
         // printf("\n");
         
         // //---------------------------------------------------//
+        printf("Comicio a looppare\n");
         
         while(1);
 
