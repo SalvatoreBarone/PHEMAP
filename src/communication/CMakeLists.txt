@@ -8,7 +8,7 @@ target_include_directories(channel
 
 find_library(LIBRT rt) 
 if(LIBRT)
-target_link_libraries(channel PRIVATE Threads::Threads linux_thread linux_timer ${LIBRT})
+target_link_libraries(channel PRIVATE Threads::Threads linux_thread linux_timer linux_queue ${LIBRT})
 endif()
 
 add_library(transport STATIC
