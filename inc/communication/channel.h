@@ -22,19 +22,23 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <mqueue.h>
-#include <pthread.h>
 
-#include "config.h"
+#ifdef LINUX_ENV
+    #include <mqueue.h>
+    #include <pthread.h>
 
-// #define SEND_QUEUE  "/send_queue"
-// #define RECV_QUEUE  "/recv_queue"
-#define QUEUE_NAME_DIM  11
+    #define QUEUE_NAME_DIM  11
+#endif
+#ifdef FRTOS_ENV
+    
+#endif
 
 #define INIT_F        0
 #define DEINIT_F      1
@@ -45,31 +49,47 @@
 typedef struct
 {
     uint32_t cli_id;                    //id of destination
-    uint32_t size;                           //length of the buffer
+    uint32_t size;                      //length of the buffer
 	uint8_t buff[MSG_SIZE];             //pointer of the buffer
 }
 ch_msg_t;
 
-/* Structure for sending and receiving queue. */
+#ifdef LINUX_ENV
+    typedef mqd_t custom_que_t;
+#endif
+#ifdef FRTOS_ENV
+    
+#endif
+
+/* Structure for sending and receiving queues. */
 typedef struct
 {
-	mqd_t send_q;
-    mqd_t recv_q[DEVICE_NUM];
-    int msg_max_num;         
-    int msg_len;
-    char s_q_name[QUEUE_NAME_DIM];     
-    char r_q_name[DEVICE_NUM][QUEUE_NAME_DIM];
+    uint32_t msg_max_num;         
+    uint32_t msg_len;
+    custom_que_t send_q;
+    custom_que_t recv_q[DEVICE_NUM];
+    #ifdef LINUX_ENV
+        char s_q_name[QUEUE_NAME_DIM];     
+        char r_q_name[DEVICE_NUM][QUEUE_NAME_DIM];
+    #endif
+    #ifdef FRTOS_ENV
+        
+    #endif
 }
 ch_que_t;
 
 /* Structure for low level transport information. */
 typedef struct
 {
-    uint32_t phy_ids[DEVICE_NUM];        //pointer to the array of entity that can communicate
-    // int phy_cli_num;           //number of clients 
-    void * cose;               //pointer to any kind of user data
-    pthread_t recv_thid;       //
-    pthread_t send_thid;       //
+    uint32_t phy_ids[DEVICE_NUM];       //pointer to the array of entity that can communicate
+    void * cose;                        //pointer to any kind of user data
+    #ifdef LINUX_ENV
+        pthread_t recv_thid;
+        pthread_t send_thid;
+    #endif
+    #ifdef FRTOS_ENV
+        
+    #endif
 }
 ch_phy_cfg;
 
@@ -101,7 +121,7 @@ int32_t ch_msg_pop(channel_t * chnl, ch_msg_t * msg);
 void* ch_msg_recv(void * args);
 void* ch_msg_send(void * args);
 
-int32_t ch_phy_fun_set(ch_phy_fun * functions, uint8_t op, void * fun);       //è necessario capire se passare il tipo specifico oppure la struttura generale
-int32_t ch_phy_que_set(ch_que_t * que, int msg_max_num, int msg_len);
+int32_t ch_phy_fun_set(ch_phy_fun * functions, uint8_t op, void * fun);
+int32_t ch_phy_que_set(ch_que_t * que, uint32_t msg_max_num, uint32_t msg_len);
 
 #endif 
