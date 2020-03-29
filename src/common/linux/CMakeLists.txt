@@ -15,3 +15,12 @@ add_library(linux_timer STATIC
 #Specifies include directories to use when compiling a given target
 target_include_directories(linux_timer
                             PRIVATE ${CMAKE_SOURCE_DIR}/inc ${CMAKE_SOURCE_DIR}/inc/common/linux)
+
+add_library(linux_queue STATIC 
+            linux_queue.c
+            ${CMAKE_SOURCE_DIR}/inc/common/linux/linux_queue.h
+            )   
+
+#Specifies include directories to use when compiling a given target
+target_include_directories(linux_queue
+                            PRIVATE ${CMAKE_SOURCE_DIR}/inc ${CMAKE_SOURCE_DIR}/inc/common/linux)
