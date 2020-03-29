@@ -1,38 +1,99 @@
-// /**
-//  * @file channel.c
-//  *
-//  * @author Alfonso Fezza <alfonsofezza93@gmail.com>
-//  *
-//  * @todo Think about the possibility to implement an error code and using errno lib.
-//  * Copyright 2019 Alfonso Fezza <alfonsofezza93@gmail.com>
-//  *
-//  * This file is part of libPHEMAP.
-//  *
-//  * libPHEMAP is free software; you can redistribute it and/or modify it under 
-//  * the terms of the GNU General Public License as published by the Free Software
-//  * Foundation; either version 3 of the License, or any later version.
-//  *
-//  * libPHEMAP is distributed in the hope that it will be useful, but WITHOUT ANY
-//  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-//  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-//  *
-//  * You should have received a copy of the GNU General Public License along with
-//  * this project; if not, write to the Free Software Foundation, Inc., 51
-//  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-//  */
-#include <unistd.h>
-#include <inttypes.h>
-#include <mqueue.h>
-#include <pthread.h>
-
-#include <errno.h>
-extern int errno;
-
+/**
+ * @file channel.c
+ *
+ * @author Alfonso Fezza <alfonsofezza93@gmail.com>
+ *
+ * @todo Think about the possibility to implement an error code and using errno lib.
+ * Copyright 2019 Alfonso Fezza <alfonsofezza93@gmail.com>
+ *
+ * This file is part of libPHEMAP.
+ *
+ * libPHEMAP is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or any later version.
+ *
+ * libPHEMAP is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this project; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 #include "channel.h"
 #include "typedefs.h"
 #include "config.h"
-#include "linux_thread.h"
-#include "linux_timer.h"
+
+#ifdef LINUX_ENV
+    #include <unistd.h>
+    #include <inttypes.h>
+    #include <mqueue.h>
+    #include <pthread.h>
+
+    #include "linux_thread.h"
+    #include "linux_timer.h"
+    #include "linux_queue.h"
+
+    #include <errno.h>
+    extern int errno;
+#endif
+#ifdef FRTOS_ENV
+        
+#endif
+
+static inline custom_que_t custom_queue_create( 
+        char * const queue_name,
+        const uint32_t msg_max_num,
+        const uint32_t msg_len)
+{
+    #ifdef LINUX_ENV
+    return linux_queue_create(queue_name, 
+                            msg_max_num,
+                            msg_len);
+    #endif
+    #ifdef FRTOS_ENV
+        
+    #endif
+}
+
+static inline int custom_queue_delete(
+        custom_que_t queue,
+        char * const queue_name)
+{
+    #ifdef LINUX_ENV
+    return linux_queue_delete(queue, 
+                            queue_name);
+    #endif
+    #ifdef FRTOS_ENV
+        //insert xquedelete here 
+        return 0;
+    #endif
+}
+
+static inline int custom_queue_send(
+        custom_que_t queue,
+        const char * const msg)
+{
+    #ifdef LINUX_ENV
+    return mq_send(queue, msg, sizeof(ch_msg_t), 0);
+    #endif
+    #ifdef FRTOS_ENV
+        //insert xQueueSend here 
+    #endif
+}
+
+static inline int custom_queue_recv(
+        custom_que_t queue,
+        char * const msg)
+{
+    #ifdef LINUX_ENV
+        return mq_receive(queue, msg, sizeof(ch_msg_t), 0);
+    #endif
+    #ifdef FRTOS_ENV
+        //insert xQueueReceive here 
+        return sizeof(ch_msg_t);
+    #endif
+}
 
 /**
  * @brief Channel initializzation   
@@ -70,43 +131,27 @@ int32_t ch_init(
     }
     
 /*____ initialize the queue */
-    /* check if the queue are initialized */
-    if((chnl->queue.r_q_name[DEVICE_NUM-1][0] != '/') && (chnl->queue.s_q_name[0] != '/')){    
-        return -1; //errore queue_notinit_error
-    }
     printf("CH_PRINT: channel queue init \n");                 //DELME
-
-    /* setting the queue attributes */
-    struct mq_attr q_attr;
-    q_attr.mq_flags = 0;
-    q_attr.mq_maxmsg = chnl->queue.msg_max_num;
-    q_attr.mq_msgsize = chnl->queue.msg_len;
-    q_attr.mq_curmsgs = 0;
-
-    /* create the sending message queue */
-    chnl->queue.send_q = mq_open(chnl->queue.s_q_name, O_CREAT | O_NONBLOCK | O_RDWR, 0644, &q_attr); //check permission //deve essere non bloccante
-    if(chnl->queue.send_q == (mqd_t)-1){
-        return -1; //return error code or errno //maybe need to deallocate physical channel
+    
+    chnl->queue.send_q = custom_queue_create(chnl->queue.s_q_name,
+                                            chnl->queue.msg_max_num,
+                                            chnl->queue.msg_len);
+    if(chnl->queue.send_q == (custom_que_t)-1){
+        return -1; 
     }
 
-    /* create the receiving message queue */ //TODO check if correctly opened
-    char * queue_name;
+    /* create the receiving message queues */
     for (int i = 0; i < DEVICE_NUM; i++)
-    {    
-        queue_name = &chnl->queue.r_q_name[i][0];
-        chnl->queue.recv_q[i] = mq_open(queue_name, O_CREAT | O_NONBLOCK | O_RDWR, 0644, &q_attr);//check permission //deve essere non bloccante
-        if(chnl->queue.recv_q[i]  == (mqd_t)-1){    
-            return -2; //return error code or errno //maybe need to deallocate physical channel
+    {
+        chnl->queue.recv_q[i] = custom_queue_create(&chnl->queue.r_q_name[i][0], 
+                                                    chnl->queue.msg_max_num,
+                                                    chnl->queue.msg_len);
+        if(chnl->queue.recv_q[i]  == (custom_que_t)-1){    
+            return -1; 
         }
     }
 /*____ lunch the sender and receiver listener periodic thread */        
     printf("CH_PRINT: sender and receiver thread create \n");                 //DELME
-
-    // pthread_attr_t th_attr;
-    // pthread_attr_init(&th_attr);
-    // res = pthread_attr_setdetachstate(&th_attr, PTHREAD_CREATE_DETACHED);
-    // res = pthread_create(&chnl->cfg.send_thid, &th_attr, &ch_msg_send,(void*) chnl);
-    // res = pthread_create(&chnl->cfg.recv_thid, &th_attr, &ch_msg_recv,(void*) chnl);
 
     linux_thread_create(&chnl->cfg.send_thid, 10, ch_msg_send, (void*) chnl);
     linux_thread_create(&chnl->cfg.recv_thid, 10, ch_msg_recv, (void*) chnl);
@@ -134,7 +179,8 @@ int32_t ch_msg_push(
     // printf("CH_PRINT: Enter channel push message\n");                 //DELME
     // printf("CH_PRINT: send on channel\n");                            //DELME
 
-    int res = mq_send(chnl->queue.send_q, (const char *)msg, sizeof(ch_msg_t), 0);
+    // int res = mq_send(chnl->queue.send_q, (const char *)msg, sizeof(ch_msg_t), 0);
+    int res = custom_queue_send(chnl->queue.send_q, (const char *)msg);
     if(res < 0){
         printf("errore: %s\n" ,strerror(errno));
         return -1;              //errore queue_sending_error
@@ -164,7 +210,8 @@ int32_t ch_msg_pop(
 
     ssize_t bytes_read; 
 
-    bytes_read = mq_receive(chnl->queue.recv_q[msg->cli_id], (char *)msg, sizeof(ch_msg_t), 0);
+    // bytes_read = mq_receive(chnl->queue.recv_q[msg->cli_id], (char *)msg, sizeof(ch_msg_t), 0);
+    bytes_read = custom_queue_recv(chnl->queue.recv_q[msg->cli_id], (char *)msg);
     if(bytes_read != sizeof(ch_msg_t)){
         // printf("errore: %s\n" ,strerror(errno));
         return -1;          
@@ -206,7 +253,8 @@ void* ch_msg_recv(      //task periodico di ricezione
         {
             printf("CH_PRINT: ricevuto qualcosa da %d \n", msg.cli_id);                 //DELME
             /* sending received data to applicative receiving queue*/ 
-            res = mq_send(chnl->queue.recv_q[msg.cli_id], (const char *)&msg, sizeof(ch_msg_t), 0);
+            // res = mq_send(chnl->queue.recv_q[msg.cli_id], (const char *)&msg, sizeof(ch_msg_t), 0);
+            res = custom_queue_send(chnl->queue.recv_q[msg.cli_id], (const char *)&msg);
             if(res < 0){//necessiti di chiudere e rillocare code più lunghe
                 printf("Queue full, need to increase dimensions");
                 exit(-1);       //maybe assert is better
@@ -246,7 +294,8 @@ void* ch_msg_send(           //task periodico di invio
         linux_wait_period(&tim);
 
         /* receiving sended data from applicative sending queue*/
-        bytes_read = mq_receive(chnl->queue.send_q, (char *)&msg, sizeof(ch_msg_t), 0);
+        // bytes_read = mq_receive(chnl->queue.send_q, (char *)&msg, sizeof(ch_msg_t), 0);
+        bytes_read = custom_queue_recv(chnl->queue.send_q, (char *)&msg);
         if(bytes_read == sizeof(ch_msg_t))
         {
             // printf("CH_PRINT: write on channel \n");                 //DELME
@@ -281,34 +330,20 @@ int32_t ch_deinit(
     }
 
 /*____ deinitialize the queue */
-    /* cleaning operation for deallocating queue */
-    res = mq_close(chnl->queue.send_q);
-    if((mqd_t)-1 == res){
-        return -1;
-    }
-
-    for (int i = 0; i < DEVICE_NUM; i++)
-    {    
-        res = mq_close(chnl->queue.recv_q[i]); 
-        if((mqd_t)-1 == res){
-            return -1;
-        }
-    }
-    printf("CH_PRINT: queue closed\n");                 //DELME
-
-    res = mq_unlink(chnl->queue.s_q_name);
-    if((mqd_t)-1 == res){
+    // /* cleaning operation for deallocating queue */
+    res = custom_queue_delete(chnl->queue.send_q, chnl->queue.s_q_name);      
+    if(res == -1){
         return -1;
     }
 
     for (int i = 0; i < DEVICE_NUM; i++)
     {
-        res = mq_unlink(chnl->queue.r_q_name[i]);      
-        if((mqd_t)-1 == res){
+        res = custom_queue_delete(chnl->queue.recv_q[i], chnl->queue.r_q_name[i]);      
+        if(res == -1){
             return -1;
         }
     }
-    printf("CH_PRINT: queue unlinked\n");                 //DELME
+    printf("CH_PRINT: queues deleted\n");                 //DELME
 
 /*____ kill the sender and receiver listener periodic thread */
     //change the variable that the thread check
@@ -385,26 +420,27 @@ int32_t ch_phy_fun_set(
 //  */
 int32_t ch_phy_que_set(
         ch_que_t * que, 
-        int msg_max_num, 
-        int msg_len)
+        uint32_t msg_max_num, 
+        uint32_t msg_len)
 {
-    int str_len = QUEUE_NAME_DIM - 1;
-
     que->msg_max_num = msg_max_num;
     que->msg_len = msg_len;
 
-    static int ch_num = 0;
-    int k = 0;
-    k = sprintf(que->s_q_name, "/q_send%d", ch_num);
-    // printf("\nsend name has %d char" , k);
-    for (int i = 0; i < DEVICE_NUM; i++)
-    {
-        k = sprintf(&que->r_q_name[i][0], "/q_recv%d_%d", ch_num, i); 
-        // printf("\n%s", &que->r_q_name[i][0]);
-        // printf("\nrecv name %d has %d char" ,i , k);
+    #ifdef LINUX_ENV
+        int str_len = QUEUE_NAME_DIM - 1;
 
-    }
-    ch_num++;
+        static int ch_num = 0;
+        int k = 0;
+        k = sprintf(que->s_q_name, "/q_send%d", ch_num);
+        // printf("\nsend name has %d char" , k);
+        for (int i = 0; i < DEVICE_NUM; i++)
+        {
+            k = sprintf(&que->r_q_name[i][0], "/q_recv%d_%d", ch_num, i); 
+            // printf("\n%s", &que->r_q_name[i][0]);
+            // printf("\nrecv name %d has %d char" ,i , k);
+        }
+        ch_num++;
+    #endif
 
     return 0;
 }
