@@ -170,7 +170,7 @@ int32_t PHEMAP_AS_PHEMAPInit(
 
 	// estraggo la chain del device con cui voglio parlare
 	if (-1 == PHEMAP_Chain_peekLink(
-						as->database_name, 
+						as, 
 						device_id, 
 						0,
 						SENTINEL+3,
@@ -254,6 +254,7 @@ int32_t PHEMAP_AS_PHEMAPInit(
 	// il link S+3 è la root sentinel, che non deve essere usata. Per questo
 	// motivo, se l'inizializzazione è avvenuta correttamente, si fa avanzare
 	// il puntatore al link corrente di SENTINEL + 4 posizioni.
+    as->dev_link_counter[device_id] = 0;
     
 	return 0;
 }
