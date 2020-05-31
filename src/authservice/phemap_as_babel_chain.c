@@ -257,7 +257,7 @@ int32_t PHEMAP_AS_BabelChainSetup(
 	printf("estraggo il link\n");			//DELME
 	// estraggo la chain del device con cui voglio parlare
 	if (-1 == PHEMAP_Chain_getNextLink(
-						as->database_name, 
+						as, 
 						device_id, 
 						0,
 						&chainA.links[0]))
@@ -275,7 +275,7 @@ int32_t PHEMAP_AS_BabelChainSetup(
 
     // estraggo carnet_length+1 link dalla chain del device A
     if (-1 == PHEMAP_Chain_peekLink(
-						as->database_name, 
+						as, 
 						device_id, 
 						0,
 						(carnet_length+1),
@@ -288,7 +288,7 @@ int32_t PHEMAP_AS_BabelChainSetup(
     // estraggo carnet_length link dalla chain del device B
 	PHEMAP_Chain_t chainB;
     if (-1 == PHEMAP_Chain_peekLink(
-						as->database_name, 
+						as, 
 						dest_id, 
 						0,
 						(carnet_length+2), //carnet_length link per il carnet, e 2 per la mutua autenticazione della notify
