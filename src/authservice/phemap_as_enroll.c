@@ -94,7 +94,7 @@ int32_t PHEMAP_GenerateChain(
 
 		request->type = enrollment_request;
 		memcpy(	&request->payload.link, 
-				&chain->links[i-1], 		//add &
+				&chain->links[i-1], 		
 				sizeof(PHEMAP_Link_t));
 
 		// Invio della challenge
