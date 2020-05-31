@@ -24,6 +24,7 @@
 #define PHEMAP_AS_BabelChain_H
 
 #include "as.h"				
+#include "phemap_chain.h"			
 
 int32_t PHEMAP_AS_BabelChainSetup(
 		PHEMAP_AS_t * const as, 

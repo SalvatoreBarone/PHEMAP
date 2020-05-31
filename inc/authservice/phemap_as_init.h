@@ -26,6 +26,7 @@
 #define PHEMAP_AS_INIT_H
 
 #include "as.h"				
+#include "phemap_chain.h"			
 
 int32_t PHEMAP_AS_PHEMAPInit(
 		PHEMAP_AS_t * const as, 
