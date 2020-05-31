@@ -97,7 +97,7 @@ int32_t PHEMAP_Chain_createDatabase(
 // la seconda ritorna i successivi k link in una chain
 // la seconda prende in ingresso un flag per dire se si vogliono o meno le sentinelle
 int32_t PHEMAP_Chain_getNextLink(
-		const char * const db_name,
+		PHEMAP_AS_t * const as,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
 		PHEMAP_Link_t * const link)
@@ -110,9 +110,9 @@ int32_t PHEMAP_Chain_getNextLink(
 	char buff[50];
 
 	res = sprintf(buff, "%016lx", device_id);		//aggiungi la logica per chain_id
-	char dbase[strlen(db_name)+16+1];
+	char dbase[strlen(as->database_name)+16+1];
 
-	strcpy(dbase, db_name);
+	strcpy(dbase, as->database_name);
 	strcat(dbase, buff);
 
 	//controllo che il file esista
@@ -142,9 +142,11 @@ int32_t PHEMAP_Chain_getNextLink(
 	}
 
 	//controllo che current non sia una sentinella 
-	if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+	// if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+	if((as->dev_link_counter[device_id] % AS_SENTINEL) == 0)
 	{
 		current++;
+		as->dev_link_counter[device_id]++;
 		printf("current: %x\n", current);	
 	}
 
@@ -186,6 +188,7 @@ int32_t PHEMAP_Chain_getNextLink(
 	fclose (fp);
 
 	current++;
+	as->dev_link_counter[device_id]++;
 
 	//riapro il file in lettura/scrittura
 	fp = fopen (dbase,"r+");
@@ -207,7 +210,7 @@ int32_t PHEMAP_Chain_getNextLink(
 }
 
 int32_t PHEMAP_Chain_peekLink(
-		const char * const db_name,
+		PHEMAP_AS_t * const as,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
 		uint32_t chain_len,		//quanti link voglio estrarre
@@ -222,9 +225,9 @@ int32_t PHEMAP_Chain_peekLink(
 	char buff[50];
 
 	res = sprintf(buff, "%016lx", device_id);		//aggiungi la logica per chain_id
-	char dbase[strlen(db_name)+16+1];
+	char dbase[strlen(as->database_name)+16+1];
 
-	strcpy(dbase, db_name);
+	strcpy(dbase, as->database_name);
 	strcat(dbase, buff);
 
 	//controllo che il file esista
@@ -262,9 +265,11 @@ int32_t PHEMAP_Chain_peekLink(
 	if (senti_flag != RET_SENTINEL)	//non voglio le sentinelle 
 	{
 		//controllo che current non sia una sentinella 	
-		if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+		// if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+		if((as->dev_link_counter[device_id] % AS_SENTINEL) == 0)
 		{
 			current++;
+			as->dev_link_counter[device_id]++;
 		}	
 	}
 
@@ -303,12 +308,15 @@ int32_t PHEMAP_Chain_peekLink(
 
 		current++;
 		printf("current %d\n",current);			//DEL ME 
+		as->dev_link_counter[device_id]++;
 		if (senti_flag != 0)	//non voglio le sentinelle 
 		{
 			//controllo che current non sia una sentinella 
-			if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+			// if (((current-(int32_t)(AS_SENTINEL_ROOT)) % AS_SENTINEL) == 0)
+			if ((as->dev_link_counter[device_id] % AS_SENTINEL) == 0)
 			{
 				current++;
+				as->dev_link_counter[device_id]++;
 				res = fseek(fp,size, SEEK_CUR);
 				if(res != 0){
 					fclose (fp);
