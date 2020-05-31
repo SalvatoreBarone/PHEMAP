@@ -27,6 +27,7 @@
 
 #include <inttypes.h>
 #include "as_config.h"
+#include "as.h"
 #include "typedefs.h"
 
 #define RET_SENTINEL 0					//vedere se questo è il posto giusto
@@ -51,13 +52,13 @@ int32_t PHEMAP_Chain_createDatabase(
 // 		uint32_t chain_id,
 // 		PHEMAP_Chain_t * const chain);
 int32_t PHEMAP_Chain_getNextLink(
-		const char * const db_name,
+		PHEMAP_AS_t * const as,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
 		PHEMAP_Link_t * const link);
 
 int32_t PHEMAP_Chain_peekLink(
-		const char * const db_name,
+		PHEMAP_AS_t * const as,
 		PHEMAP_Device_ID_t device_id,
 		uint32_t chain_id,
 		uint32_t chain_len,
